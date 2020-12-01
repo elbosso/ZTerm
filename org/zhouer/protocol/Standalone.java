@@ -37,7 +37,7 @@ public class Standalone
 		
 		// 保證至少有 protocol 與 host
 		if( args.length < 2) {
-			System.out.println("Not enough parameter!");
+//			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Not enough parameter!");
 			return;
 		}
 
@@ -57,12 +57,12 @@ public class Standalone
 			p = new SSH2( args[1], port, null );
 			p.setTerminalType( "vt100" );
 		} else {
-			System.out.println("Unknown protocol!");
+//			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Unknown protocol!");
 			return;
 		}
 		
 		if( p.connect() == false ) {
-			System.out.println("Connection error!");
+//			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Connection error!");
 			return;
 		}
 		

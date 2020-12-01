@@ -68,7 +68,7 @@ public class FileUtils
 				}
 				break;
 			default:
-				System.err.println( "Unknown file type!" );
+//				if(CLASS_LOGGER.isEnabledFor(org.apache.log4j.Level.ERROR))CLASS_LOGGER.error( "Unknown file type!" );
 				break;
 			}
 		} catch( IOException e ) {

@@ -18,6 +18,7 @@ import org.zhouer.vt.Config;
 
 public class Resource implements Config
 {
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(Resource.class);
 	public static final String GEOMETRY_X = "geometry.x";
 	public static final String GEOMETRY_Y = "geometry.y";
 	public static final String GEOMETRY_WIDTH = "geometry.width";
@@ -329,7 +330,7 @@ public class Resource implements Config
 				rc.createNewFile();
 				// System.out.println("rcfile: " + rc.getName() + " created.");
 			} catch (IOException e) {
-				System.out.println("catch IOException when create new rcfile.");
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("catch IOException when create new rcfile.");
 			}
 		}
 	}

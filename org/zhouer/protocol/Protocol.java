@@ -7,6 +7,7 @@ public interface Protocol
 {	
 	public static final String TELNET = "telnet";
 	public static final String SSH = "ssh";
+	public static final String STDINOUT = "stdinout";
 
 	public void setTerminalType( String tt );
 	public String getTerminalType();

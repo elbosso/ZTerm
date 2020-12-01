@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 
 class TelnetInputStream extends InputStream
 {
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(TelnetInputStream.class);
 	private Telnet telnet;
 	
 	public int read() throws IOException
@@ -62,6 +63,7 @@ class TelnetOutputStream extends OutputStream
 
 public class Telnet implements Protocol
 {
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(Telnet.class);
 	private String host;
 	private int port;
 	
@@ -387,11 +389,11 @@ public class Telnet implements Protocol
 		} catch ( UnknownHostException e ) {
 			// 可能是未連線或連線位置錯誤
 			// e.printStackTrace();
-			System.out.println("Caught UnknownHostException in Telnet::connect()");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Caught UnknownHostException in Telnet::connect()");
 			return false;
 		} catch ( IOException e ) {
 			// e.printStackTrace();
-			System.out.println("Caught IOException in Telnet::connect()");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Caught IOException in Telnet::connect()");
 			return false;
 		}
 
@@ -411,13 +413,13 @@ public class Telnet implements Protocol
 			sock.close();				
 		} catch( IOException e ) {
 			// e.printStackTrace();
-			System.out.println( "Caught IOException in Network::disconnect()" );
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Caught IOException in Network::disconnect()" );
 		}
 		
 		if( sock.isClosed() ) {
 			// System.out.println( "Connection closed!");
 		} else {
-			System.out.println( "Disconnect failed!");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Disconnect failed!");
 		}
 	}
 	

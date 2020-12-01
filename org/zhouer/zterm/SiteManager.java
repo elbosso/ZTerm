@@ -54,7 +54,7 @@ class ParameterPanel extends JPanel implements ActionListener
 	private JLabel encodingLabel, emulationLabel;
 	private JComboBox encodingCombo, emulationCombo;
 
-	private String[] encodingList = { "Big5", "UTF-8" };
+	private String[] encodingList = { "Big5", java.nio.charset.StandardCharsets.UTF_8.name() };
 	private String[] emulationList = { "vt100", "xterm", "xterm-color", "ansi" };
 	
 	private JLabel useSocksLabel;

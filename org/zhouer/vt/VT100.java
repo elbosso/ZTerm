@@ -12,6 +12,7 @@ import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Vector;
@@ -24,6 +25,7 @@ import org.zhouer.utils.TextUtils;
 
 class FIFOSet
 {
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(FIFOSet.class);
 	boolean[] contain;
 	int[] set;
 	int front, rear;
@@ -86,6 +88,7 @@ class FIFOSet
 
 public class VT100 extends JComponent
 {
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(VT100.class);
 	private static final long serialVersionUID = -5704767444883397941L;
 
 	private Application parent;
@@ -109,7 +112,7 @@ public class VT100 extends JComponent
 	
 	// 各種字型參數
 	private Font font;
-	private int fontwidth, fontheight, fontdescent;
+	private int fontwidth, fontheight, fontdescent, fontascent,fontleading;
 	private int fontsize;
 	
 	// 處理來自使用者的事件
@@ -236,11 +239,11 @@ public class VT100 extends JComponent
 	private void initValue()
 	{
 		// 讀入模擬終端機的大小，一般而言是 80 x 24
-		maxcol = resource.getIntValue( Config.TERMINAL_COLUMNS );
-		maxrow = resource.getIntValue( Config.TERMINAL_ROWS );
+		maxcol = resource!=null?resource.getIntValue( Config.TERMINAL_COLUMNS ):80;
+		maxrow = resource!=null?resource.getIntValue( Config.TERMINAL_ROWS ):24;
 		
 		// 讀入 scroll buffer 行數
-		scrolllines = resource.getIntValue( Config.TERMINAL_SCROLLS );
+		scrolllines = resource!=null?resource.getIntValue( Config.TERMINAL_SCROLLS ):200;
 		
 		// 所需要的陣列大小
 		totalrow = maxrow + scrolllines;
@@ -278,15 +281,20 @@ public class VT100 extends JComponent
 		
 		keypadmode = NUMERIC_KEYPAD;
 	}
-	
+
+	public void initBuf()
+	{
+		nvtBuf = new byte[4096];
+		nvtBufPos = nvtBufLen = 0;
+
+	}
 	private void initArray()
 	{
 		int i, j;
 		
 		// 從上層讀取資料用的 buffer
-		nvtBuf = new byte[4096];
-		nvtBufPos = nvtBufLen = 0;
-		
+		initBuf();
+
 		text = new char[totalrow][totalcol];
 		mbc = new int[totalrow][totalcol];
 		fgcolors = new byte[totalrow][totalcol];
@@ -349,6 +357,14 @@ public class VT100 extends JComponent
 		addKeyListener( user );
 		addMouseListener( user );
 		addMouseMotionListener( user );
+	}
+	public void addCommandListener(PropertyChangeListener l)
+	{
+		user.addPropertyChangeListener("command", l);
+	}
+	public void removeCommandListener(PropertyChangeListener l)
+	{
+		user.removePropertyChangeListener(l);
 	}
 	
 	/**
@@ -423,15 +439,15 @@ public class VT100 extends JComponent
 		int style;
 		
 		// 微調
-		fonthorizontalgap = resource.getIntValue( Config.FONT_HORIZONTAL_GAP );
-		fontverticalgap = resource.getIntValue( Config.FONT_VERTICLAL_GAP );
-		fontdescentadj = resource.getIntValue( Config.FONT_DESCENT_ADJUST );
+		fonthorizontalgap = resource!=null?resource.getIntValue( Config.FONT_HORIZONTAL_GAP ):1;
+		fontverticalgap = resource!=null?resource.getIntValue( Config.FONT_VERTICLAL_GAP ):0;
+		fontdescentadj = resource!=null?resource.getIntValue( Config.FONT_DESCENT_ADJUST ):0;
 		
 		// 設定 family
-		family = resource.getStringValue( Config.FONT_FAMILY );
+		family = resource!=null?resource.getStringValue( Config.FONT_FAMILY ):"Dialog";
 		
 		// 設定 size
-		fontsize = resource.getIntValue( Config.FONT_SIZE );
+		fontsize = resource!=null?resource.getIntValue( Config.FONT_SIZE ):0;
 		if( fontsize == 0 ) {
 			// 按照螢幕的大小設定
 			fw = width / maxcol - fonthorizontalgap;
@@ -445,10 +461,10 @@ public class VT100 extends JComponent
 		
 		// 設定 style（bold, italy, plain）
 		style = Font.PLAIN;
-		if( resource.getBooleanValue( Config.FONT_BOLD ) ) {
+		if( (resource!=null)&&(resource.getBooleanValue( Config.FONT_BOLD ) )) {
 			style |= Font.BOLD;
 		}
-		if( resource.getBooleanValue( Config.FONT_ITALY ) ) {
+		if( (resource!=null)&&(resource.getBooleanValue( Config.FONT_ITALY ) )) {
 			style |= Font.ITALIC;
 		}
 		
@@ -458,9 +474,12 @@ public class VT100 extends JComponent
 		fm = getFontMetrics( font );
 		
 		// XXX: 這裡對 fontheight 與 fontwidth 的假設可能有問題
-		fontheight = fontsize;
+		fontheight = fm.getHeight();
 		fontwidth = fontsize / 2;
-		fontdescent = (int) (1.0 * fm.getDescent() / fm.getHeight() * fontsize);
+		fontdescent = (int) (1.0 * fm.getDescent());
+		fontascent = (int) (1.0 * fm.getAscent());
+		fontleading = (int) (1.0 * fm.getLeading());
+//		System.out.println(fontheight+" "+fm.getHeight()+" "+fm.getLeading()+" "+fm.getAscent()+" "+fm.getDescent());
 		
 		fontheight += fontverticalgap;
 		fontwidth += fonthorizontalgap;
@@ -469,6 +488,7 @@ public class VT100 extends JComponent
 		// 修改字型會影響 translate 的座標
 		transx = (width - fontwidth * maxcol) / 2;
 		transy = (height - fontheight * maxrow) / 2;
+		bi=null;
 	}
 	
 	/**
@@ -525,6 +545,7 @@ public class VT100 extends JComponent
 	{
 		// buffer 用光了，再跟下層拿。
 		// 應該用 isBufferEmpty() 判斷的，但為了效率直接判斷。
+
 		if( nvtBufPos == nvtBufLen ) {
 			nvtBufLen = parent.readBytes( nvtBuf );
 			// 連線終止或錯誤，應盡快結束 parse()
@@ -1402,7 +1423,7 @@ public class VT100 extends JComponent
 			c = urlColor;
 		} else {
 			// 錯誤
-			System.err.println( "Unknown color mode!" );
+			if(CLASS_LOGGER.isEnabledFor(org.apache.log4j.Level.ERROR))CLASS_LOGGER.error( "Unknown color mode!" );
 			c = Color.WHITE;
 		}
 		
@@ -1533,7 +1554,7 @@ public class VT100 extends JComponent
 			// TODO: show cursor, ignore
 			break;
 		default:
-			System.out.println("Set mode " + m + " not support.");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Set mode " + m + " not support.");
 			break;
 		}
 	}
@@ -1566,7 +1587,7 @@ public class VT100 extends JComponent
 			// TODO: hide cursor, ignore
 			break;
 		default:
-			System.out.println("Reset mode " + m + " not support.");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Reset mode " + m + " not support.");
 			break;
 		}
 	}
@@ -1736,14 +1757,14 @@ public class VT100 extends JComponent
 				// TODO
 				b = getNextByte();
 				if( b == 'c' ) {
-					System.out.println( "Send Secondary Device Attributes String" );
+					if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Send Secondary Device Attributes String" );
 				} else {
-					System.out.println( "Unknown control sequence: ESC [ > " + (char)b );
+					if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Unknown control sequence: ESC [ > " + (char)b );
 				}
 				break;
 			default:
 				// TODO
-				System.out.println( "Unknown control sequence: ESC [ " + (char)b );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Unknown control sequence: ESC [ " + (char)b );
 				break;
 		}
 	}
@@ -1784,7 +1805,7 @@ public class VT100 extends JComponent
 			parent.setWindowTitle( new String( text, 0, count) );
 			break;
 		default:
-			System.out.println("Set text parameters(not fully support)");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Set text parameters(not fully support)");
 			break;
 		}
 	}
@@ -1794,7 +1815,7 @@ public class VT100 extends JComponent
 		byte b;
 		// TODO:
 		b = getNextByte();
-		System.out.println( "ESC " + (char)a + " " + (char)b + "(SCS)" );
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "ESC " + (char)a + " " + (char)b + "(SCS)" );
 		
 		if( a == '(' ) {
 			// Select G0 Character Set (SCS)
@@ -1871,7 +1892,7 @@ public class VT100 extends JComponent
 				parse_text_parameter();
 				break;
 			default:
-				System.out.println( "Unknown control sequence: ESC " + (char)b );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Unknown control sequence: ESC " + (char)b );
 				break;
 		}
 	}
@@ -1924,11 +1945,11 @@ public class VT100 extends JComponent
 			break;
 		case 14: // SO (Shift Out)
 			// TODO:
-			System.out.println("SO (not yet support)");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("SO (not yet support)");
 			break;
 		case 15: // SI (Shift In)
 			// TODO:
-			System.out.println("SI (not yet support)");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("SI (not yet support)");
 			break;
 		// case 16:
 		// case 17:
@@ -1940,12 +1961,12 @@ public class VT100 extends JComponent
 		// case 23:
 		case 24: // CAN (Cancel)
 			// TODO:
-			System.out.println("CAN (not yet support)");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("CAN (not yet support)");
 			break;
 		case 25:
 		case 26: // SUB (Subsitute)
 			// TODO:
-			System.out.println("SUB (not yet support)");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("SUB (not yet support)");
 			break;
 		case 27: // ESC (Escape)
 			parse_esc();
@@ -1994,7 +2015,7 @@ public class VT100 extends JComponent
 		// 到這裡我們才知道字元真正被放到陣列中的位置，所以現在才紀錄 url 的位置
 		if( addurl ) {
 			// XXX: 假設 column 數小於 256
-			probablyurl.addElement( new Integer((prow << 8) | ( ccol - 1)) );
+			probablyurl.addElement( Integer.valueOf((prow << 8) | ( ccol - 1)) );
 		}
 		
 		// 紀錄暫存的資料，寬字元每個字最多用兩個 bytes，一般字元每字一個 byte
@@ -2080,6 +2101,13 @@ public class VT100 extends JComponent
 		Graphics2D g;
 		boolean show_cursor, show_text, show_underline;
 		
+		
+		
+		if(bi==null)
+			bi=new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+		if((bi.getWidth()!=width)||(bi.getHeight()!=height))
+			bi=new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_ARGB);			
+		
 		g = bi.createGraphics();
 		g.setFont(font);
 		
@@ -2087,7 +2115,7 @@ public class VT100 extends JComponent
 		g.translate( transx, transy );
 		
 		// 設定 Anti-alias
-		if( resource.getBooleanValue( Config.FONT_ANTIALIAS ) ) {
+		if( (resource!=null)&&(resource.getBooleanValue( Config.FONT_ANTIALIAS ) )) {
 			g.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
 		}
 		
@@ -2116,7 +2144,7 @@ public class VT100 extends JComponent
 			
 			// 閃爍控制與色彩屬性
 			show_text = ((attributes[prow][pcol] & BLINK) == 0) || text_blink;
-			show_cursor = physicalRow(crow) == prow && ccol == col && cursor_blink;
+			show_cursor = physicalRow(crow) == prow && ccol == col && cursor_blink && hasFocus() && isEnabled();
 			show_underline = (attributes[prow][pcol] & UNDERLINE) != 0;
 			
 			// 填滿背景色
@@ -2147,7 +2175,7 @@ public class VT100 extends JComponent
 				g.drawString(
 						Character.toString( text[prow][pcol - mbc[prow][pcol] + 1]),
 						w - fontwidth * (mbc[prow][pcol] - 1),
-						h + fontheight - fontdescent);
+						h + fontheight - fontdescent-fontleading);
 				g.setClip( oldclip );
 			}
 			
@@ -2156,7 +2184,7 @@ public class VT100 extends JComponent
 				if( isurl[prow][pcol] ) {
 					g.setColor( getColor( prow, pcol, URL ) );
 				}
-				g.drawLine( w, h + fontheight - 1, w + fontwidth - 1, h + fontheight - 1 );
+				g.drawLine( w, h + fontheight -fontdescent-fontleading- 1, w + fontwidth - 1, h + fontheight -fontdescent-fontleading- 1 );
 			}
 		}
 		
@@ -2175,7 +2203,8 @@ public class VT100 extends JComponent
 			
 			// FIXME: magic number
 			// 游標閃爍
-			if( resource.getBooleanValue( Config.CURSOR_BLINK ) ) {
+			boolean blink=resource!=null?resource.getBooleanValue( Config.CURSOR_BLINK ):true;
+			if( blink ) {
 				if( cursor_blink_count % 2 == 0 ) {
 					cursor_blink = !cursor_blink;
 					setRepaint( crow, ccol );
@@ -2255,14 +2284,17 @@ public class VT100 extends JComponent
 				repaint();
 			}
 		}
+//		System.out.println("terminating");
 	}
 	
 	protected void paintComponent( Graphics g )
 	{
+		super.paintComponent(g);
+		g.clearRect(0, 0, width, height);
 		// 因為多個分頁共用一張 image, 因此只有在前景的分頁才有繪圖的權利，
 		// 不在前景時不重繪，以免干擾畫面。
 		// 初始化完成之前不重繪。
-		if( !parent.isTabForeground() || !init_ready ) {
+		if((parent!=null)&&( !parent.isTabForeground() || !init_ready )) {
 			return;
 		}
 		

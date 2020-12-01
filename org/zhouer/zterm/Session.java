@@ -10,6 +10,7 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,6 +22,7 @@ import javax.swing.Timer;
 
 import org.zhouer.protocol.Protocol;
 import org.zhouer.protocol.SSH2;
+import org.zhouer.protocol.StdInOut;
 import org.zhouer.protocol.Telnet;
 import org.zhouer.utils.Convertor;
 import org.zhouer.utils.TextUtils;
@@ -30,17 +32,18 @@ import org.zhouer.vt.VT100;
 
 public class Session extends JPanel implements Runnable, Application, AdjustmentListener, MouseWheelListener
 {
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(Session.class);
 	private static final long serialVersionUID = 2180544188833033537L;
 
-	private ZTerm parent;
-	private Resource resource;
+	protected Application parent;
+	protected Resource resource;
 	private Convertor conv;
 	private Site site;
 	
 	private String socks_host;
 	private int socks_port;
 	
-	private VT100 vt;
+	protected VT100 vt;
 	private JScrollBar scrollbar;
 	
 	private String iconname;
@@ -50,16 +53,16 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 	private int scrolllines;
 	
 	// 與遠端溝通用的物件
-	private Protocol network;
+	protected Protocol network;
 	private InputStream is;
 	private OutputStream os;
 	
 	// 自動重連用
-	private long startTime;
+	protected long startTime;
 	
 	// 防閒置用
 	private boolean antiidle;
-	private Timer ti;
+	protected Timer ti;
 	private long lastInputTime, antiIdleInterval;
 	
 	// 連線狀態
@@ -72,7 +75,15 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 	public static final int STATE_ALERT = 4;
 	
 	// 這個 session 是否擁有一個 tab, 可能 session 還沒結束，但 tab 已被關閉。
-	private boolean hasTab;
+	protected boolean hasTab;
+
+	@Override
+	public void setEnabled(boolean enabled)
+	{
+		super.setEnabled(enabled);
+		if(vt!=null)
+			vt.setEnabled(enabled);
+	}
 	
 	/*
 	 * 送往上層的
@@ -80,18 +91,26 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 	
 	public void setState( int s )
 	{
+		int old=getState();
 		state = s;
-		parent.updateTabState( s, this );
+		setEnabled(state==STATE_CONNECTED);
+		firePropertyChange("state", old, getState());
+//		parent.updateTabState( s, this );
+	}
+
+	public int getState()
+	{
+		return state;
 	}
 	
 	public boolean isTabForeground()
 	{
-		return parent.isTabForeground( this );
+		return parent.isTabForeground(  );
 	}
 	
 	public void bell()
 	{
-		parent.bell( this );
+		parent.bell(  );
 	}
 	
 	public void copy()
@@ -186,7 +205,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 			os.write( b );
 		} catch (IOException e) {
 			// e.printStackTrace();
-			System.out.println( "Caught IOException in Session::writeByte(...)" );
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Caught IOException in Session::writeByte(...)" );
 			close( true );
 		}
 	}
@@ -198,7 +217,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 			os.write( buf, offset, len );
 		} catch (IOException e) {
 			// e.printStackTrace();
-			System.out.println( "Caught IOException in Session::writeBytes(...)" );
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Caught IOException in Session::writeBytes(...)" );
 			close( true );
 		}
 	}
@@ -286,14 +305,14 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 	{
 		// TODO: 未完成
 		iconname = in;
-		parent.updateTab();
+		//parent.updateTab();
 	}
 	
 	public void setWindowTitle( String wt )
 	{
 		// TODO: 未完成
 		windowtitle = wt;
-		parent.updateTab();
+		//parent.updateTab();
 	}
 	
 	public String getIconName()
@@ -332,10 +351,10 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		setState( STATE_CLOSED );
 		
 		// 若遠端 server 主動斷線則判斷是否需要重連
-		boolean autoreconnect = resource.getBooleanValue( Resource.AUTO_RECONNECT );
+		boolean autoreconnect = resource!=null?resource.getBooleanValue( Resource.AUTO_RECONNECT ):false;
 		if( autoreconnect && fromRemote ) {	
-			long reopenTime = resource.getIntValue( Resource.AUTO_RECONNECT_TIME );
-			long reopenInterval = resource.getIntValue( Resource.AUTO_RECONNECT_INTERVAL );
+			long reopenTime = resource!=null?resource.getIntValue( Resource.AUTO_RECONNECT_TIME ):5l;
+			long reopenInterval = resource!=null?resource.getIntValue( Resource.AUTO_RECONNECT_INTERVAL ):1000l;
 			long now = new Date().getTime();
 			
 			// 判斷連線時間距現在時間是否超過自動重連時間
@@ -349,7 +368,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 				
 				// 有可能在 sleep 時分頁被使用者手動關掉，只有當分頁仍存在時才重連
 				if( hasTab )
-					parent.reopenSession( this );	
+					;//parent.reopenSession( this );	
 			}
 		}
 	}
@@ -363,11 +382,11 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 	public void updateAntiIdleTime()
 	{
 		// 更新是否需要啟動防閒置
-		antiidle = resource.getBooleanValue( Resource.ANTI_IDLE );
+		antiidle = resource!=null?resource.getBooleanValue( Resource.ANTI_IDLE ):false;
 		
 		// 防閒置的作法是定時檢查距上次輸入是否超過 interval,
 		// 所以這裡只要設定 antiIdleTime 就自動套用新的值了。
-		antiIdleInterval = resource.getIntValue( Resource.ANTI_IDLE_INTERVAL ) * 1000 ;
+		antiIdleInterval = (resource!=null?resource.getIntValue( Resource.ANTI_IDLE_INTERVAL ):1) * 1000 ;
 	}
 	
 	public void showMessage( String msg )
@@ -383,12 +402,35 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		Point p = vt.getLocationOnScreen();
 		String link = vt.getURL(x, y);
 
-		parent.showPopup( p.x + x, p.y + y, link );
+		//parent.showPopup( p.x + x, p.y + y, link );
 	}
 	
 	public void openExternalBrowser( String url )
 	{
 		parent.openExternalBrowser( url );
+	}
+
+	public void disConnect()
+	{
+		if(network!=null)
+			network.disconnect();
+		setState(STATE_CLOSED);
+		setEnabled(false);
+	}
+
+	public void connect(Site site)
+	{
+		disConnect();
+		this.site=site;
+		if(this.site!=null)
+		{
+			windowtitle = this.site.host;
+			iconname = this.site.host;
+			vt.setEncoding( this.site.encoding );
+			vt.setEmulation( this.site.emulation );
+			vt.initBuf();
+			new Thread( this ).start();
+		}		
 	}
 	
 	class AntiIdleTask implements ActionListener
@@ -429,7 +471,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 	{
 		scrollbar.setValue( scrollbar.getValue() + amount );
 	}
-	
+
 	public void run()
 	{
 		// 設定連線狀態為 trying
@@ -438,7 +480,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		// 新建連線
 		if( site.protocol.equalsIgnoreCase( Protocol.TELNET ) )
 		{
-			if( resource.getBooleanValue( Resource.USING_SOCKS ) && site.usesocks ) {
+			if( (resource!=null?resource.getBooleanValue( Resource.USING_SOCKS ):false) && site.usesocks ) {
 				socks_host = resource.getStringValue( Resource.SOCKS_HOST );
 				socks_port = resource.getIntValue( Resource.SOCKS_PORT );
 				network = new Telnet( site.host, site.port, socks_host, socks_port );
@@ -450,32 +492,41 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		else if( site.protocol.equalsIgnoreCase( Protocol.SSH ) )
 		{
 			network = new SSH2( site.host, site.port, site.username );
+//			((SSH2)network).setInteractiveCallback(getInteractiveCallback());
 			network.setTerminalType( site.emulation );
+		}
+		else if( site.protocol.equalsIgnoreCase( Protocol.STDINOUT ) )
+		{
+			network=new StdInOut();
+			network.setTerminalType(site.emulation);
 		}
 		else
 		{
-			System.err.println( "Unknown protocol: " + site.protocol );
+			if(CLASS_LOGGER.isEnabledFor(org.apache.log4j.Level.ERROR))CLASS_LOGGER.error( "Unknown protocol: " + site.protocol );
 		}
 		
 		// 連線失敗
 		if( network.connect() == false ) {
 			//  設定連線狀態為 closed
 			setState( STATE_CLOSED );
-			showMessage( "連線失敗！" );
+//			showMessage( "連線失敗！" );
 			return;
 		}
 		
 		is = network.getInputStream();
 		os = network.getOutputStream();
-		
+		System.err.println(is);
+		System.err.println(os);
+
 		// TODO: 如果需要 input filter or trigger 可以在這邊套上
 		
 		//  設定連線狀態為 connected
 		setState( STATE_CONNECTED );
 		
 		// 連線成功，更新或新增連線紀錄
-		resource.addFavorite( site );
-		parent.updateFavoriteMenu();
+		if(resource!=null)
+			resource.addFavorite( site );
+		//parent.updateFavoriteMenu();
 		
 		// 防閒置用的 Timer
 		updateAntiIdleTime();
@@ -485,11 +536,19 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		
 		// 記錄連線開始的時間
 		startTime = new Date().getTime();
-		
-		vt.run();
+try
+{
+	vt.run();
+}
+catch(java.lang.Throwable t)
+{
+	t.printStackTrace();
+}
+//		System.out.println("terminating");
+		setState(STATE_CLOSED);
 	}
 	
-	public Session( Site s, Resource r, Convertor c, BufferedImage bi, ZTerm pa )
+	public Session( Site s, Resource r, Convertor c, BufferedImage bi, Application pa )
 	{
 		super();
 		
@@ -502,9 +561,6 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		hasTab = true;
 		
 		// FIXME: 預設成 host
-		windowtitle = site.host;
-		iconname = site.host;
-		
 		// FIXME: magic number
 		setBackground( Color.BLACK );
 		
@@ -512,17 +568,15 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		vt = new VT100( this, resource, conv, bi );
 		
 		// FIXME: 是否應該在這邊設定？
-		vt.setEncoding( site.encoding );
-		vt.setEmulation( site.emulation );
-		
+		connect(site);
 		// 設定 layout 並把 vt 及 scrollbar 放進去，
 		setLayout( new BorderLayout() );
 		add( vt, BorderLayout.CENTER );
 		
 		// chitsaou.070726: 顯示捲軸
-		if( resource.getBooleanValue( Resource.SHOW_SCROLL_BAR ) )
+		if(( resource==null)||(resource.getBooleanValue( Resource.SHOW_SCROLL_BAR ) ))
 		{
-			scrolllines = resource.getIntValue( Config.TERMINAL_SCROLLS );
+			scrolllines = resource!=null?resource.getIntValue( Config.TERMINAL_SCROLLS ):200;
 			// FIXME: magic number
 			scrollbar = new JScrollBar( JScrollBar.VERTICAL, scrolllines - 1, 24, 0, scrolllines + 23 );
 			scrollbar.addAdjustmentListener( this );
@@ -533,5 +587,13 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 			addMouseWheelListener( this );
 		}
 		
+	}
+	public void addCommandListener(PropertyChangeListener l)
+	{
+		vt.addCommandListener(l);
+	}
+	public void removeCommandListener(PropertyChangeListener l)
+	{
+		vt.removeCommandListener(l);
 	}
 }

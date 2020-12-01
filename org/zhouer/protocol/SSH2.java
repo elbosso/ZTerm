@@ -13,7 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 
-import ch.ethz.ssh2.InteractiveCallback;
+import com.trilead.ssh2.InteractiveCallback;
 
 class SSH2InputStream extends InputStream
 {
@@ -104,13 +104,14 @@ class Auth implements InteractiveCallback {
 	
 	public static String getUsername()
 	{
-		return JOptionPane.showInputDialog( null, "使用者名稱：", "使用者名稱", JOptionPane.QUESTION_MESSAGE);
+		return JOptionPane.showInputDialog( null, "Nutzername：", "Bitte eingeben!", JOptionPane.QUESTION_MESSAGE);
 	}
 
 	public static String getPasword( String title, String prompt )
 	{
-		PasswordDialog d = new PasswordDialog( null, title, prompt, true );
-		return d.getPassword();
+		JPasswordField passwordField = new JPasswordField(10);
+		JOptionPane.showConfirmDialog( null, passwordField, "Bitte eingeben!", JOptionPane.OK_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
+		return new String(passwordField.getPassword());
 	}
 	
 	public String[] replyToChallenge(String name, String instruction, int numPrompts, String[] prompt, boolean[] echo) throws Exception {
@@ -134,6 +135,7 @@ class Auth implements InteractiveCallback {
 
 public class SSH2 implements Protocol
 {
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(SSH2.class);
 	private String host;
 	private int port;
 	private String username;
@@ -145,20 +147,23 @@ public class SSH2 implements Protocol
 	private boolean authenticated;
 	private boolean connected, closed;
 	
-	private ch.ethz.ssh2.Connection conn;
-	private ch.ethz.ssh2.Session sess;
+	private com.trilead.ssh2.Connection conn;
+	private com.trilead.ssh2.Session sess;
+
 	
 	public boolean connect()
 	{
 		try {
 			// System.out.println("SSH2 to host: " + host + ", port: " + port + " ..." );
-			conn = new ch.ethz.ssh2.Connection( host, port );
+			conn = new com.trilead.ssh2.Connection( host, port );
 			// FIXME: magic number, 應可自行設定 timeout
 			conn.connect( null, 5000, 60000 );
 			conn.setTCPNoDelay( true );
 			connected = true;
 			
-			// 若 SSH2 constructor 未指定 username 則用 Auth.getUsername() 取得
+			de.elbosso.ui.dialog.SSHAuthDialog dlg=de.elbosso.ui.dialog.SSHAuthDialog.create(null);
+			
+/*			// 若 SSH2 constructor 未指定 username 則用 Auth.getUsername() 取得
 			if( username == null || username.length() == 0 )
 				username = Auth.getUsername();
 			
@@ -168,28 +173,24 @@ public class SSH2 implements Protocol
 			}
 			
 			String[] methods = conn.getRemainingAuthMethods( username );
+			for(int i=0;i<methods.length;++i)
+				if(CLASS_LOGGER.isEnabledFor(org.apache.log4j.Level.ERROR))CLASS_LOGGER.error(methods[i]);
 			if( methods.length == 0 ) {
-				authenticated = conn.authenticateWithNone( username );
-				// System.out.println( "SSH2: no authentication is needed" );
+//				authenticated = conn.authenticateWithNone( username );
+				 if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "SSH2: no authentication is needed" );
 			} else {
 				// for(int i = 0; i < methods.length; i++) {
 				// 	System.out.println( methods[i] );
 				// }
-				if( conn.isAuthMethodAvailable( username, "password" ) ) {
-					authenticated = conn.authenticateWithPassword( username, Auth.getPasword( "輸入密碼", "請輸入密碼：" ) );
-					// System.out.println("SSH2: password auth");
-				} else if( conn.isAuthMethodAvailable( username, "keyboard-interactive" )) {
-					authenticated = conn.authenticateWithKeyboardInteractive( username, new Auth() );
-					// System.out.println("SSH2: keyboard-interactive auth");
-				} else if( conn.isAuthMethodAvailable( username, "publickey" ) ) {
-					System.out.println("SSH2 publickey(not yet support)");
+ if( conn.isAuthMethodAvailable( username, "publickey" ) ) {
+					authenticated=conn.authenticateWithPublicKey(username, new java.io.File("/home/elbosso/.ssh/id_rsa"), "");
 				} else {
-					System.out.println("unknown SSH2 authentication method.");
+					if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("unknown SSH2 authentication method.");
 				}
 			}
 			
 			if( authenticated == false ) {
-				// System.out.println("authentication failed.");
+				 if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("authentication failed.");
 				disconnect();
 				return false;
 			} else {
@@ -197,6 +198,13 @@ public class SSH2 implements Protocol
 			}
 			
 			sess = conn.openSession();
+*/			sess=dlg.showDialog(conn);
+			if(sess==null)
+			{
+				authenticated=false;
+				disconnect();
+				return false;				
+			}
 			sess.requestPTY( terminalType, 80, 24, 0, 0, null );
 			sess.startShell();
 			is = sess.getStdout();
@@ -205,8 +213,8 @@ public class SSH2 implements Protocol
 			return true;
 			
 		} catch (IOException e) {
-			// e.printStackTrace();
-			System.out.println("Caught IOException in SSH2::connect()");
+			 e.printStackTrace();
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Caught IOException in SSH2::connect()");
 			connected = false;
 			disconnect();
 			return false;
@@ -223,7 +231,7 @@ public class SSH2 implements Protocol
 				sess.close();
 			} catch (IOException e) {
 				// e.printStackTrace();
-				System.out.println( "Caught IOException in SSH2::disconnect()" );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Caught IOException in SSH2::disconnect()" );
 			}
 		}
 		

@@ -42,9 +42,10 @@ import javax.swing.text.JTextComponent;
 
 import org.zhouer.protocol.Protocol;
 import org.zhouer.utils.Convertor;
+import org.zhouer.vt.Application;
 import org.zhouer.vt.Config;
 
-public class ZTerm extends JFrame implements ActionListener, ChangeListener, KeyEventDispatcher, KeyListener, ComponentListener
+public class ZTerm extends JFrame implements ActionListener, ChangeListener, KeyEventDispatcher, KeyListener, ComponentListener, Application
 {
 	private static final long serialVersionUID = 6304594468121008572L;
 		
@@ -723,7 +724,7 @@ public class ZTerm extends JFrame implements ActionListener, ChangeListener, Key
 	{
 		Session s;
 		
-		s = new Session( si, resource, conv, bi, this );
+		s = new ZTermSession( si, resource, conv, bi, this );
 		
 		// index 為連線後放在第幾個分頁，若為 -1 表開新分頁。
 		if( index == -1 ) {
@@ -1068,7 +1069,7 @@ public class ZTerm extends JFrame implements ActionListener, ChangeListener, Key
 		} else if( source == big5Item ) {
 			updateEncoding( "Big5" );
 		} else if( source == utf8Item ) {
-			updateEncoding( "UTF-8" );
+			updateEncoding( java.nio.charset.StandardCharsets.UTF_8.name() );
 		}
 		
 		// 我的最愛列表
@@ -1306,5 +1307,70 @@ public class ZTerm extends JFrame implements ActionListener, ChangeListener, Key
 	
 	public static void main( String args[] ) {
 		new ZTerm();
+	}
+
+	public void showPopup(int x, int y)
+	{
+		showPopup(x, y, "");
+	}
+
+	public boolean isConnected()
+	{
+		return false;
+	}
+
+	public boolean isClosed()
+	{
+		return true;
+	}
+
+	public boolean isTabForeground()
+	{
+		return false;
+	}
+
+	public void bell()
+	{
+		java.awt.Toolkit.getDefaultToolkit().beep();
+	}
+
+	public void setIconName(String name)
+	{
+		
+	}
+
+	public void setWindowTitle(String title)
+	{
+		
+	}
+
+	public void scroll(int lines)
+	{
+		
+	}
+
+	public int readBytes(byte[] buf)
+	{
+		return 0;
+	}
+
+	public void writeByte(byte b)
+	{
+		
+	}
+
+	public void writeBytes(byte[] buf, int offset, int len)
+	{
+		
+	}
+
+	public void writeChar(char c)
+	{
+		
+	}
+
+	public void writeChars(char[] buf, int offset, int len)
+	{
+		
 	}
 }

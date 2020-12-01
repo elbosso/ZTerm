@@ -5,6 +5,7 @@ import java.io.InputStream;
 
 public class Convertor
 {
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(Convertor.class);
 	private byte[] big5bytes;
 	private byte[] ucs2bytes;
 	private char[] ucs2chars;
@@ -26,7 +27,7 @@ public class Convertor
 	public static int readFile( String name, byte[] b )
 	{
 		int size = 0, len;
-		InputStream is = Convertor.class.getResourceAsStream( name );
+		InputStream is = Convertor.class.getClassLoader().getResourceAsStream( name );
 		
 		try {
 			// XXX: 本來應該 is.read( b ) 就可以才對，
@@ -50,11 +51,11 @@ public class Convertor
 		// FIXME: magic number
 		if( encoding.equalsIgnoreCase("Big5") ) {
 			return big5BytesToChar( b, from, limit );
-		} else if( encoding.equalsIgnoreCase("UTF-8") ) {
+		} else if( encoding.equalsIgnoreCase(java.nio.charset.StandardCharsets.UTF_8.name()) ) {
 			return utf8BytesToChar( b, from, limit );
 		} else {
 			// TODO: 其他的編碼
-			System.out.println("Unknown Encoding: " + encoding );
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Unknown Encoding: " + encoding );
 			return 0;
 		}
 	}
@@ -63,11 +64,11 @@ public class Convertor
 	{
 		if( encoding.equalsIgnoreCase("Big5") ) {
 			return charToBig5Bytes( c );
-		} else if( encoding.equalsIgnoreCase("UTF-8") ) {
+		} else if( encoding.equalsIgnoreCase(java.nio.charset.StandardCharsets.UTF_8.name()) ) {
 			return charToUTF8Bytes( c );
 		} else {
 			// TODO: 其他的編碼
-			System.out.println("Unknown Encoding: " + encoding );
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Unknown Encoding: " + encoding );
 			return null;			
 		}
 	}
@@ -77,11 +78,11 @@ public class Convertor
 		// FIXME: magic number
 		if( encoding.equalsIgnoreCase("Big5") ) {
 			return Convertor.isValidBig5( b, from, limit );
-		} else if( encoding.equalsIgnoreCase("UTF-8") ) {
+		} else if( encoding.equalsIgnoreCase(java.nio.charset.StandardCharsets.UTF_8.name()) ) {
 			return Convertor.isValidUTF8( b, from, limit );
 		} else {
 			// TODO: 其他的編碼
-			System.out.println("Unknown Encoding: " + encoding );
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Unknown Encoding: " + encoding );
 			return true;
 		}
 	}
@@ -246,7 +247,7 @@ public class Convertor
 			b[2] = (byte) (0x80 | ((c>> 6) & 0x3f));
 			b[3] = (byte) (0x80 | (c & 0x3f));
 		} else {
-			System.out.println("Error converting char to UTF-8 bytes.");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Error converting char to UTF-8 bytes.");
 			b = null;
 		}
 		
@@ -260,8 +261,8 @@ public class Convertor
 		ucs2bytes = new byte[64 * 1024];
 		big5bytes = new byte[128 * 1024];
 		
-		readFile( "conv/ucs2.txt", ucs2bytes );
-		readFile( "conv/big5.txt", big5bytes );
+		readFile( "org/zhouer/utils/conv/ucs2.txt", ucs2bytes );
+		readFile( "org/zhouer/utils/conv/big5.txt", big5bytes );
 		
 		ucs2chars = new char[ ucs2bytes.length / 2 ];
 		

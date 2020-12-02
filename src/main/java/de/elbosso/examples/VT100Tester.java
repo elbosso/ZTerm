@@ -10,6 +10,7 @@ import org.zhouer.protocol.Protocol;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 
 /**
  *
@@ -170,8 +171,26 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 		frame.setVisible(true);
 	}
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
+//		de.elbosso.util.Utilities.configureBasicStdoutLogging(Level.ALL);
+		try
+		{
+			java.util.Properties iconFallbacks = new java.util.Properties();
+			java.io.InputStream is=de.netsysit.util.ResourceLoader.getResource("de/elbosso/ressources/data/icon_trans_material.properties").openStream();
+			iconFallbacks.load(is);
+			is.close();
+			de.netsysit.util.ResourceLoader.configure(iconFallbacks);
+		}
+		catch(java.io.IOException ioexp)
+		{
+			ioexp.printStackTrace();
+		}
+		de.netsysit.util.ResourceLoader.setSize(false ? de.netsysit.util.ResourceLoader.IconSize.medium : de.netsysit.util.ResourceLoader.IconSize.small);
+		java.util.Properties iconFallbacks = new java.util.Properties();
+		iconFallbacks.setProperty("de/netsysit/ressources/gfx/ca/verbindung_herstellen_48.png","png/communication/call/materialicons/48dp/1x/baseline_call_black_48dp.png");
+		iconFallbacks.setProperty("de/netsysit/ressources/gfx/ca/verbindung_trennen_48.png","png/communication/call_end/materialicons/48dp/1x/baseline_call_end_black_48dp.png");
+		de.netsysit.util.ResourceLoader.configure(iconFallbacks);
 		new VT100Tester();
 	}
 
@@ -281,7 +300,7 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 				}
 			}
 		};
-		testAction.putValue(javax.swing.Action.SMALL_ICON,de.netsysit.util.ResourceLoader.getIcon("de/netsysit/ressources/gfx/ca/Konfigurieren_48.png"));
+		testAction.putValue(javax.swing.Action.SMALL_ICON,de.netsysit.util.ResourceLoader.getIcon("toolbarButtonGraphics/general/Preferences24.gif"));
 	}
 	
 	

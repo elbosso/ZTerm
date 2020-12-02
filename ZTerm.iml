@@ -5,10 +5,16 @@
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: de.elbosso:data:1.1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: de.elbosso:custommaterialgfx:1.1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: de.elbosso:materialgfx:1.1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: de.elbosso:model:1.1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: de.elbosso:documents:1.1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: de.elbosso:ui:1.1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: de.elbosso:ui_i18n:1.1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: de.elbosso:json:1.1.0-SNAPSHOT" level="project" />

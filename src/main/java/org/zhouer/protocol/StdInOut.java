@@ -69,10 +69,12 @@ public class StdInOut implements Protocol
 	private String terminalType;
 
 	private InputStream is;
+	private InputStream ise;
 	private OutputStream os;
 
 	private java.io.InputStream stdin;
 	private java.io.PrintStream stdout;
+	private java.io.PrintStream stderr;
 
 	private boolean connected;
 
@@ -80,83 +82,21 @@ public class StdInOut implements Protocol
 	{
 		stdin = System.in;
 		stdout = System.out;
+		stderr = System.err;
 		is=stdin;
 		os=stdout;
 		final int PIPE_BUFFER = 2048;
 
 		try
 		{
-// 2 -Create PipedInputStream with the buffer
 			PipedInputStream inPipe = new PipedInputStream(PIPE_BUFFER);
-
-// 3 -Create PipedOutputStream and bound it to the PipedInputStream object
 			PipedOutputStream outPipe = new PipedOutputStream(inPipe);
-			System.setOut(new PrintStream(outPipe)
-						  {
-							  @Override
-							  public void println(String x)
-							  {
-								  print(x);
-								  println();
-							  }
-
-							  @Override
-							  public void println(boolean x)
-							  {
-								  print(java.lang.Boolean.toString(x));
-								  println();
-							  }
-
-							  @Override
-							  public void println(char x)
-							  {
-								  print(java.lang.Character.toString(x));
-								  println();
-							  }
-
-							  @Override
-							  public void println(int x)
-							  {
-								  print(java.lang.Integer.toString(x));
-								  println();
-							  }
-
-							  @Override
-							  public void println(long x)
-							  {
-								  print(java.lang.Long.toString(x));
-								  println();
-							  }
-
-							  @Override
-							  public void println(float x)
-							  {
-								  print(java.lang.Float.toString(x));
-								  println();
-							  }
-
-							  @Override
-							  public void println(double x)
-							  {
-								  print(java.lang.Double.toString(x));
-								  println();
-							  }
-
-							  @Override
-							  public void println(Object x)
-							  {
-								  print(x);
-								  println();
-							  }
-							  @Override
-							  public void println()
-							  {
-								  super.print("\r\n");
-							  }
-						  }
-			);
+			System.setOut(new StdErrOutPrintStream(outPipe));
 			is=inPipe;
-//			System.setIn(is);
+			PipedInputStream inePipe = new PipedInputStream(PIPE_BUFFER);
+			PipedOutputStream outePipe = new PipedOutputStream(inePipe);
+			System.setErr(new StdErrOutPrintStream(outePipe));
+			ise=inePipe;
 
 		} catch (IOException e)
 		{
@@ -213,7 +153,10 @@ public class StdInOut implements Protocol
 	{
 		int r;
 
-		r = is.read();
+		if(ise.available()>0)
+			r=ise.read();
+		else
+			r = is.read();
 		if( r == -1 ) {
 			// System.out.println("read -1 (EOF), disconnect().");
 			throw new IOException();
@@ -225,7 +168,10 @@ public class StdInOut implements Protocol
 	{
 		int r;
 
-		r =  is.read( b );
+		if(ise.available()>0)
+			r=ise.read(b);
+		else
+			r =  is.read( b );
 		
 		if( r == -1 ) {
 			// System.out.println("read -1 (EOF), disconnect().");
@@ -238,8 +184,11 @@ public class StdInOut implements Protocol
 	public int readBytes( byte[] b, int offset, int length ) throws IOException
 	{
 		int r;
-		
-		r = is.read( b, offset, length );
+
+		if(ise.available()>0)
+			r=ise.read(b,offset,length);
+		else
+			r = is.read( b, offset, length );
 		
 		if( r == -1 ) {
 			// System.out.println("read -1 (EOF), disconnect().");

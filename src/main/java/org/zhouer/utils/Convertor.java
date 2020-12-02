@@ -261,8 +261,8 @@ public class Convertor
 		ucs2bytes = new byte[64 * 1024];
 		big5bytes = new byte[128 * 1024];
 		
-		readFile( "org/zhouer/utils/conv/ucs2.txt", ucs2bytes );
-		readFile( "org/zhouer/utils/conv/big5.txt", big5bytes );
+		readFile("org/zhouer/utils/conv/ucs2.txt", ucs2bytes );
+		readFile("org/zhouer/utils/conv/big5.txt", big5bytes );
 		
 		ucs2chars = new char[ ucs2bytes.length / 2 ];
 		

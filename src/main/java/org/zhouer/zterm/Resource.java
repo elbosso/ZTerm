@@ -121,6 +121,8 @@ public class Resource implements Config
 		defmap.put( AUTO_LINE_BREAK_LENGTH, "72");
 		defmap.put( USE_CUSTOM_BELL, "false");
 		defmap.put( CUSTOM_BELL_PATH, "");
+
+		defmap.put( LF_IS_CR, "false");
 	}
 	
 	private File getRcFile()

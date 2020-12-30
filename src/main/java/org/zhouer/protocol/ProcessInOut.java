@@ -1,68 +1,62 @@
 package org.zhouer.protocol;
 
-import com.trilead.ssh2.InteractiveCallback;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 
-class StdInOutInputStream extends InputStream
+class ProcessInOutInputStream extends InputStream
 {
-	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(StdInOutInputStream.class);
-	private StdInOut stdInOut;
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(ProcessInOutInputStream.class);
+	private ProcessInOut processInOut;
 
 	public int read() throws IOException
 	{
-		return stdInOut.readByte();
+		return processInOut.readByte();
 	}
 
 	public int read( byte[] buf ) throws IOException
 	{
-		return stdInOut.readBytes( buf );
+		return processInOut.readBytes( buf );
 	}
 
 	public int read( byte[]buf, int offset, int length ) throws IOException
 	{
-		return stdInOut.readBytes( buf, offset, length );
+		return processInOut.readBytes( buf, offset, length );
 	}
 
-	public StdInOutInputStream( StdInOut tel )
+	public ProcessInOutInputStream( ProcessInOut tel )
 	{
-		stdInOut = tel;
+		processInOut = tel;
 	}
 }
 
-class StdInOutOutputStream extends OutputStream
+class ProcessInOutOutputStream extends OutputStream
 {
-	private StdInOut stdInOut;
+	private ProcessInOut processInOut;
 
 	public void write( int b ) throws IOException
 	{
 		// java doc: The 24 high-order bits of b are ignored.
-		stdInOut.writeByte( (byte)b );
+		processInOut.writeByte( (byte)b );
 	}
 
 	public void write( byte[] buf ) throws IOException
 	{
-		stdInOut.writeBytes( buf );
+		processInOut.writeBytes( buf );
 	}
 
 	public void write( byte[] buf, int offset, int length ) throws IOException
 	{
-		stdInOut.writeBytes( buf, offset, length );
+		processInOut.writeBytes( buf, offset, length );
 	}
 
-	public StdInOutOutputStream( StdInOut tel )
+	public ProcessInOutOutputStream( ProcessInOut tel )
 	{
-		stdInOut = tel;
+		processInOut = tel;
 	}
 }
 
-public class StdInOut implements Protocol
+public class ProcessInOut implements Protocol
 {
-	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(StdInOut.class);
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(ProcessInOut.class);
 	private String host;
 	private int port;
 	private String username;
@@ -72,71 +66,46 @@ public class StdInOut implements Protocol
 	private InputStream ise;
 	private OutputStream os;
 
-	private java.io.InputStream stdin;
-	private java.io.PrintStream stdout;
-	private java.io.PrintStream stderr;
-
 	private boolean connected;
+	private com.pty4j.PtyProcess pty;
 
 	public boolean connect()
 	{
-		stdin = System.in;
-		stdout = System.out;
-		stderr = System.err;
-		is=stdin;
-		os=stdout;
-		final int PIPE_BUFFER = 2048;
-
+		boolean rv=false;
 		try
 		{
-			PipedInputStream inPipe = new PipedInputStream(PIPE_BUFFER);
-			PipedOutputStream outPipe = new PipedOutputStream(inPipe);
-			System.setOut(new StdErrOutPrintStream(outPipe));
-			is=inPipe;
-			PipedInputStream inePipe = new PipedInputStream(PIPE_BUFFER);
-			PipedOutputStream outePipe = new PipedOutputStream(inePipe);
-			System.setErr(new StdErrOutPrintStream(outePipe));
-			ise=inePipe;
+//			ProcessBuilder pb = new ProcessBuilder("ls","-l","--color=tty");
+//			ProcessBuilder pb = new ProcessBuilder("top");
+//			ProcessBuilder pb = new ProcessBuilder("/bin/sh","-e");
+//			java.util.Map<String, String> env = pb.environment();
+//			env.put("TERM", "xterm");
+//			Process proc = pb.start();
+//			is = proc.getInputStream();
+//			ise = proc.getErrorStream();
+//			os = proc.getOutputStream();
+			// The command to run in a PTY...
+			String[] cmd = { "/usr/bin/top" };
+// The initial environment to pass to the PTY child process...
+			String[] env = { "TERM=xterm","HOME="+System.getProperty("user.home") };
 
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		System.setIn(stdin);
-		try
-		{
-// 2 -Create PipedInputStream with the buffer
-			PipedInputStream inPipe = new PipedInputStream(PIPE_BUFFER);
+			pty = com.pty4j.PtyProcess.exec(cmd, env);
 
-// 3 -Create PipedOutputStream and bound it to the PipedInputStream object
-			PipedOutputStream outPipe = new PipedOutputStream(inPipe);
-			System.setIn(inPipe);
-			os=outPipe;
-
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		connected=true;
-		return true;
-	}
-	
-	public void disconnect()
-	{
-		java.io.InputStream is=System.in;
-		java.io.OutputStream os=System.out;
-		System.setIn(stdin);
-		System.setOut(stdout);
-		System.setErr(stderr);
-		try
-		{
-			is.close();
-			os.close();
+			os = pty.getOutputStream();
+			is = pty.getInputStream();
+			ise=pty.getErrorStream();
+			connected = true;
+			rv = true;
 		}
 		catch(java.io.IOException exp)
 		{
 			exp.printStackTrace();
 		}
+		return rv;
+	}
+	
+	public void disconnect()
+	{
+		pty.destroyForcibly();
 		connected=false;
 	}
 
@@ -219,12 +188,12 @@ public class StdInOut implements Protocol
 	
 	public InputStream getInputStream()
 	{
-		return new StdInOutInputStream( this );
+		return new ProcessInOutInputStream( this );
 	}
 	
 	public OutputStream getOutputStream()
 	{
-		return new StdInOutOutputStream( this );
+		return new ProcessInOutOutputStream( this );
 	}
 	
 	public void setTerminalType( String tt )
@@ -238,7 +207,7 @@ public class StdInOut implements Protocol
 		return terminalType;
 	}
 	
-	public StdInOut()
+	public ProcessInOut()
 	{
 		host = "localhost";
 		port = -1;

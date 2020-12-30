@@ -448,17 +448,21 @@ public class VT100 extends JComponent
 		
 		// 設定 size
 		fontsize = resource!=null?resource.getIntValue( Config.FONT_SIZE ):0;
+		System.out.println("fontsize  "+fontsize);
+
 		if( fontsize == 0 ) {
 			// 按照螢幕的大小設定
+			System.out.println(height+" "+maxrow+" "+fontverticalgap);
 			fw = width / maxcol - fonthorizontalgap;
 			fh = height / maxrow - fontverticalgap;
 			
-			if( fh > 2 * fw ) {
+/*			if( fh > 2 * fw ) {
+				System.out.println("correction");
 				fh = 2 * fw;
 			}
-			fontsize = fh;
+*/			fontsize = fh;
 		}
-		
+
 		// 設定 style（bold, italy, plain）
 		style = Font.PLAIN;
 		if( (resource!=null)&&(resource.getBooleanValue( Config.FONT_BOLD ) )) {
@@ -469,18 +473,24 @@ public class VT100 extends JComponent
 		}
 		
 		// 建立 font instance
-		font = new Font( family, style, fontsize );
-		
-		fm = getFontMetrics( font );
-		
-		// XXX: 這裡對 fontheight 與 fontwidth 的假設可能有問題
-		fontheight = fm.getHeight();
-		fontwidth = fontsize / 2;
-		fontdescent = (int) (1.0 * fm.getDescent());
-		fontascent = (int) (1.0 * fm.getAscent());
-		fontleading = (int) (1.0 * fm.getLeading());
-//		System.out.println(fontheight+" "+fm.getHeight()+" "+fm.getLeading()+" "+fm.getAscent()+" "+fm.getDescent());
-		
+		System.out.println("fontsize  "+fontsize);
+		int targetfontsize=fontsize;
+		fontheight=100000;
+		while(fontheight>targetfontsize)
+		{
+			font = new Font(family, style, fontsize);
+
+			fm = getFontMetrics(font);
+
+			// XXX: 這裡對 fontheight 與 fontwidth 的假設可能有問題
+			fontheight = fm.getHeight();
+			fontwidth = fontsize / 2;
+			fontdescent = (int) (1.0 * fm.getDescent());
+			fontascent = (int) (1.0 * fm.getAscent());
+			fontleading = (int) (1.0 * fm.getLeading());
+			System.out.println(fontheight + " " + fm.getHeight() + " " + fm.getLeading() + " " + fm.getAscent() + " " + fm.getDescent());
+			--fontsize;
+		}
 		fontheight += fontverticalgap;
 		fontwidth += fonthorizontalgap;
 		fontdescent += fontdescentadj;
@@ -895,8 +905,8 @@ public class VT100 extends JComponent
 			return;
 		}
 		
-		autobreak = resource.getBooleanValue( Config.AUTO_LINE_BREAK );
-		breakcount = resource.getIntValue( Config.AUTO_LINE_BREAK_LENGTH );
+		autobreak = resource!=null?resource.getBooleanValue( Config.AUTO_LINE_BREAK ):false;
+		breakcount = resource!=null?resource.getIntValue( Config.AUTO_LINE_BREAK_LENGTH ):72;
 		
 		if( autobreak ) {
 			str = TextUtils.fmt( str, breakcount );
@@ -1937,6 +1947,9 @@ public class VT100 extends JComponent
 				scrollpage(1);
 				crow--;
 			}
+			boolean insertCR = resource!=null?resource.getBooleanValue( Config.LF_IS_CR ):false;
+			if(insertCR)
+				ccol=leftmargin;
 			break;
 		// case 11:
 		// case 12:

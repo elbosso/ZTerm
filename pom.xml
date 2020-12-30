@@ -38,7 +38,7 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.elbosso.org.zhouer</groupId>
   <artifactId>ZTerm</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.2.1-SNAPSHOT</version>
     <properties>
         <project.custom.encoding>UTF-8</project.custom.encoding>
         <project.custom.java.version>11</project.custom.java.version>
@@ -88,39 +88,8 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
             </plugins>
         </pluginManagement>
       <plugins>
-          <!-- to activate this plugin, you have to create a file changelog.mustache in the directory where the pom.xml is located with similar content to this:
-          # Changelog
-
-Changelog of this project.
-
-{{#tags}}
- {{#issues}}
-  {{#hasIssue}}
-   {{#hasLink}}
-   {{/hasLink}}
-   {{^hasLink}}
-   {{/hasLink}}
-  {{/hasIssue}}
-  {{^hasIssue}}
-  {{/hasIssue}}
-
-  {{#commits}}
-**{{{messageTitle}}}**
-
-{{#messageBodyItems}}
- * {{.}}
-{{/messageBodyItems}}
-
-[{{hash}}](https://github.com/<user>/<project>>/commit/{{hash}}) {{authorName}} *{{commitTime}}*
-
-  {{/commits}}
-
- {{/issues}}
-{{/tags}}
-
-          -->
           <!-- https://github.com/tomasbjerre/git-changelog-maven-plugin/blob/master/git-changelog-maven-plugin-example/pom.xml -->
-          <!--plugin>
+          <plugin>
             <groupId>se.bjurr.gitchangelog</groupId>
             <artifactId>git-changelog-maven-plugin</artifactId>
             <version>1.60</version>
@@ -138,7 +107,7 @@ Changelog of this project.
                 </configuration>
               </execution>
             </executions>
-          </plugin-->
+          </plugin>
           <plugin>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>exec-maven-plugin</artifactId>
@@ -184,6 +153,11 @@ Changelog of this project.
 		  <id>Boundless Repository</id>
 		  <url>	https://repo.boundlessgeo.com/main/</url>
 		</repository>
+        <repository>
+            <id>bintray-jetbrains-pty4j</id>
+            <name>bintray</name>
+            <url>https://jetbrains.bintray.com/pty4j</url>
+        </repository>
     </repositories>
     <dependencies>
         <!--dependency>
@@ -286,5 +260,10 @@ Changelog of this project.
 	    <artifactId>trilead-ssh2</artifactId>
 	    <version>1.0.0-build222</version>
 	</dependency>
+        <dependency>
+            <groupId>org.jetbrains.pty4j</groupId>
+            <artifactId>pty4j</artifactId>
+            <version>0.8.6</version>
+        </dependency>
     </dependencies>
 </project>

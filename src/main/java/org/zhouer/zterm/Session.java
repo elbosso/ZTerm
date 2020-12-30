@@ -20,10 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.Timer;
 
-import org.zhouer.protocol.Protocol;
-import org.zhouer.protocol.SSH2;
-import org.zhouer.protocol.StdInOut;
-import org.zhouer.protocol.Telnet;
+import org.zhouer.protocol.*;
 import org.zhouer.utils.Convertor;
 import org.zhouer.utils.TextUtils;
 import org.zhouer.vt.Application;
@@ -498,6 +495,11 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		else if( site.protocol.equalsIgnoreCase( Protocol.STDINOUT ) )
 		{
 			network=new StdInOut();
+			network.setTerminalType(site.emulation);
+		}
+		else if( site.protocol.equalsIgnoreCase( Protocol.PROCESSINOUT ) )
+		{
+			network=new ProcessInOut();
 			network.setTerminalType(site.emulation);
 		}
 		else

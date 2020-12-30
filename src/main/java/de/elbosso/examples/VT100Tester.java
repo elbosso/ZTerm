@@ -6,6 +6,7 @@
 package de.elbosso.examples;
 
 import org.zhouer.protocol.Protocol;
+import org.zhouer.vt.Config;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -135,8 +136,10 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 		frame=new javax.swing.JFrame();
 		frame.setDefaultCloseOperation(frame.EXIT_ON_CLOSE);
 		resource=new org.zhouer.zterm.Resource();
-		Font f=new Font("Monospaced", Font.PLAIN,17);
+		resource.setValue(Config.LF_IS_CR, Boolean.TRUE);
+		Font f=new Font("Monospaced", Font.PLAIN,16);
 		resource.setValue(resource.FONT_FAMILY, f.getFamily());
+		System.out.println("/ "+Toolkit.getDefaultToolkit().getFontMetrics(f).getAscent()+" "+Toolkit.getDefaultToolkit().getFontMetrics(f).getDescent());
 		resource.setValue(resource.TERMINAL_ROWS, 600/(Toolkit.getDefaultToolkit().getFontMetrics(f).getAscent()+Toolkit.getDefaultToolkit().getFontMetrics(f).getDescent()));
 //		Toolkit.getDefaultToolkit().getFontMetrics(f).charWidth('M');
 //		Graphics2D gfx =
@@ -232,7 +235,7 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 
 			public void actionPerformed(ActionEvent e)
 			{
-				org.zhouer.zterm.Site site=new org.zhouer.zterm.Site("huhu", "pirxhome.fritz.box", 22, Protocol.STDINOUT);
+				org.zhouer.zterm.Site site=new org.zhouer.zterm.Site("huhu", "pirxhome.fritz.box", 22, Protocol.PROCESSINOUT);
 				site.encoding=java.nio.charset.StandardCharsets.UTF_8.name();
 				vt100.connect(site);
 //				disConnectAction.setEnabled(true);
@@ -292,8 +295,14 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 						}
 					}.start();
 */
-
-				}
+/*					ProcessBuilder pb=new ProcessBuilder("htop")//, "-n", "1" ,"-b")
+							.redirectOutput(ProcessBuilder.Redirect.INHERIT)
+							.redirectInput(ProcessBuilder.Redirect.INHERIT)
+							.redirectError(ProcessBuilder.Redirect.INHERIT);
+					java.util.Map<String, String> env = pb.environment();
+					env.put("TERM", "xterm");
+					pb.start();
+*/				}
 				catch(Throwable t)
 				{
 					t.printStackTrace();

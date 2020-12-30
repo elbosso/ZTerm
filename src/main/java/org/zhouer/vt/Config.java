@@ -22,7 +22,8 @@ public interface Config
 	public static final String CLEAR_AFTER_COPY = "clear-after-copy";
 	public static final String AUTO_LINE_BREAK = "auto-line-break";
 	public static final String AUTO_LINE_BREAK_LENGTH = "auto-line-break-length";
-	
+	public static final String LF_IS_CR = "lf-is-cr";
+
 	public boolean getBooleanValue( String key );
 	public int getIntValue( String key );
 	public String getStringValue( String key );

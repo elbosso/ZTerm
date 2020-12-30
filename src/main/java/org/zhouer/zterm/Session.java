@@ -50,7 +50,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 	private int scrolllines;
 	
 	// 與遠端溝通用的物件
-	protected Protocol network;
+	protected Protocol protocol;
 	private InputStream is;
 	private OutputStream os;
 	
@@ -248,19 +248,19 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 	public boolean isConnected()
 	{
 		// 如果 network 尚未建立則也當成尚未 connect.
-		if( network == null ) {
+		if( protocol == null ) {
 			return false;
 		}
-		return network.isConnected();		
+		return protocol.isConnected();
 	}
 	
 	public boolean isClosed()
 	{
 		// 如果 network 尚未建立則也當成 closed.
-		if( network == null ) {
+		if( protocol == null ) {
 			return true;
 		}
-		return network.isClosed();
+		return protocol.isClosed();
 	}
 	
 	/*
@@ -283,7 +283,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		site.emulation = emu;
 		
 		// 通知遠端 terminal type 已改變
-		network.setTerminalType( emu );
+		protocol.setTerminalType( emu );
 		
 		vt.setEmulation( emu );
 	}
@@ -332,7 +332,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		removeMouseWheelListener( this );
 		
 		// 中斷連線
-		network.disconnect();
+		protocol.disconnect();
 		
 		// 停止防閒置用的 timer
 		if( ti != null ) {
@@ -409,8 +409,8 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 
 	public void disConnect()
 	{
-		if(network!=null)
-			network.disconnect();
+		if(protocol !=null)
+			protocol.disconnect();
 		setState(STATE_CLOSED);
 		setEnabled(false);
 	}
@@ -480,43 +480,49 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 			if( (resource!=null?resource.getBooleanValue( Resource.USING_SOCKS ):false) && site.usesocks ) {
 				socks_host = resource.getStringValue( Resource.SOCKS_HOST );
 				socks_port = resource.getIntValue( Resource.SOCKS_PORT );
-				network = new Telnet( site.host, site.port, socks_host, socks_port );
+				protocol = new Telnet( site.host, site.port, socks_host, socks_port );
 			} else {
-				network = new Telnet( site.host, site.port );
+				protocol = new Telnet( site.host, site.port );
 			}
-			network.setTerminalType( site.emulation );
-		} 
+			protocol.setTerminalType( site.emulation );
+		}
 		else if( site.protocol.equalsIgnoreCase( Protocol.SSH ) )
 		{
-			network = new SSH2( site.host, site.port, site.username );
+			protocol = new SSH2( site.host, site.port, site.username );
 //			((SSH2)network).setInteractiveCallback(getInteractiveCallback());
-			network.setTerminalType( site.emulation );
+			protocol.setTerminalType( site.emulation );
 		}
 		else if( site.protocol.equalsIgnoreCase( Protocol.STDINOUT ) )
 		{
-			network=new StdInOut();
-			network.setTerminalType(site.emulation);
+			protocol =new StdInOut();
+			protocol.setTerminalType(site.emulation);
 		}
 		else if( site.protocol.equalsIgnoreCase( Protocol.PROCESSINOUT ) )
 		{
-			network=new ProcessInOut();
-			network.setTerminalType(site.emulation);
+			protocol=new ProcessInOut(resource.getArray(Config.CMD_LINE),resource.getArray(Config.ENV_MAP));
+			protocol.setTerminalType(site.emulation);
+		}
+		else if( site.protocol.equalsIgnoreCase( Protocol.PTYINOUT ) )
+		{
+			System.out.println("TYINOUT");
+			protocol=new PtyInOut(resource.getArray(Config.CMD_LINE),resource.getArray(Config.ENV_MAP));
+			protocol.setTerminalType(site.emulation);
 		}
 		else
 		{
 			if(CLASS_LOGGER.isEnabledFor(org.apache.log4j.Level.ERROR))CLASS_LOGGER.error( "Unknown protocol: " + site.protocol );
 		}
-		
+
 		// 連線失敗
-		if( network.connect() == false ) {
+		if( protocol.connect() == false ) {
 			//  設定連線狀態為 closed
 			setState( STATE_CLOSED );
 //			showMessage( "連線失敗！" );
 			return;
 		}
 		
-		is = network.getInputStream();
-		os = network.getOutputStream();
+		is = protocol.getInputStream();
+		os = protocol.getOutputStream();
 		System.err.println(is);
 		System.err.println(os);
 
@@ -538,14 +544,14 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		
 		// 記錄連線開始的時間
 		startTime = new Date().getTime();
-try
-{
-	vt.run();
-}
-catch(java.lang.Throwable t)
-{
-	t.printStackTrace();
-}
+		try
+		{
+			vt.run();
+		}
+		catch(java.lang.Throwable t)
+		{
+			t.printStackTrace();
+		}
 //		System.out.println("terminating");
 		setState(STATE_CLOSED);
 	}

@@ -54,7 +54,7 @@ public class ZTermSession extends Session
 		removeMouseWheelListener( this );
 		
 		// 中斷連線
-		network.disconnect();
+		protocol.disconnect();
 		
 		// 停止防閒置用的 timer
 		if( ti != null ) {

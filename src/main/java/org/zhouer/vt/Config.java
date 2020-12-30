@@ -23,6 +23,8 @@ public interface Config
 	public static final String AUTO_LINE_BREAK = "auto-line-break";
 	public static final String AUTO_LINE_BREAK_LENGTH = "auto-line-break-length";
 	public static final String LF_IS_CR = "lf-is-cr";
+	public static final String CMD_LINE = "CMD_LINE";
+	public static final String ENV_MAP = "ENV_MAP";
 
 	public boolean getBooleanValue( String key );
 	public int getIntValue( String key );

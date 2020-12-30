@@ -3,6 +3,22 @@
 Changelog of this project.
 
 
+            **fixes #1,**
+
+                * fixes #2
+
+            [1ca8b3dd44ce1ae](https://github.com/<user>/<project>>/commit/1ca8b3dd44ce1ae) Jürgen Key *2021-12-30 16:32:10*
+
+
+
+            **fixes #1,**
+
+                * fixes #2
+
+            [1ca8b3dd44ce1ae](https://github.com/<user>/<project>>/commit/1ca8b3dd44ce1ae) Jürgen Key *2021-12-30 16:32:10*
+
+
+
             **fixed some minor glitches preventing the examples from running**
 
 

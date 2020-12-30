@@ -12,6 +12,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Vector;
 
 /**
  *
@@ -235,9 +238,19 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 
 			public void actionPerformed(ActionEvent e)
 			{
-				org.zhouer.zterm.Site site=new org.zhouer.zterm.Site("huhu", "pirxhome.fritz.box", 22, Protocol.PROCESSINOUT);
+/*				org.zhouer.zterm.Site site=new org.zhouer.zterm.Site("huhu", "pirxhome.fritz.box", 22, Protocol.PROCESSINOUT);
 				site.encoding=java.nio.charset.StandardCharsets.UTF_8.name();
+				resource.setArray(Config.CMD_LINE,new Vector(Arrays.asList(new String[]{"ls","-l","--color=tty"})));
+				resource.setArray(Config.ENV_MAP,new Vector(Arrays.asList(new String[]{"TERM=xterm"})));
 				vt100.connect(site);
+*/
+				org.zhouer.zterm.Site site=new org.zhouer.zterm.Site("huhu", "pirxhome.fritz.box", 22, Protocol.PTYINOUT);
+				site.encoding=java.nio.charset.StandardCharsets.UTF_8.name();
+				resource.setArray(Config.CMD_LINE,new Vector(Arrays.asList(new String[]{"/usr/bin/top"})));
+				resource.setArray(Config.CMD_LINE,new Vector(Arrays.asList(new String[]{"/bin/bash","-l"})));
+				resource.setArray(Config.ENV_MAP,new Vector(Arrays.asList(new String[]{"TERM=xterm","HOME="+System.getProperty("user.home")})));
+				vt100.connect(site);
+
 //				disConnectAction.setEnabled(true);
 //				setEnabled(false);				
 			}

@@ -55,3 +55,15 @@ any other process for that matter) inside the emulator because else you get the 
 and that leads to all kinds of problems. And please try not to be funny by setting this environment variable
 to anythong other then the choosen emulation (see VT100Tester for examples).
 
+## Resources used
+
+* https://github.com/jawi/jVT220
+* https://man7.org/linux/man-pages/man7/charsets.7.html
+* https://www.torsten-horn.de/techdocs/ascii.htm
+* https://www.vt100.net/charsets/technical.html
+* https://www.vt100.net/docs/la100-rm/chapter1.html
+* https://www.xfree86.org/current/ctlseqs.html
+* https://invisible-island.net/xterm/ctlseqs/ctlseqs.txt
+* https://man7.org/linux/man-pages/man4/console_codes.4.html
+
+

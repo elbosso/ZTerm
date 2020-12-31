@@ -65,5 +65,6 @@ to anythong other then the choosen emulation (see VT100Tester for examples).
 * https://www.xfree86.org/current/ctlseqs.html
 * https://invisible-island.net/xterm/ctlseqs/ctlseqs.txt
 * https://man7.org/linux/man-pages/man4/console_codes.4.html
-
+* https://vt100.net/docs/vt510-rm/NEL.html
+* https://vt100.net/docs/vt100-ug/chapter3.html
 

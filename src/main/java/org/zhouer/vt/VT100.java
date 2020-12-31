@@ -1740,28 +1740,28 @@ public class VT100 extends JComponent
 				restore_cursor_position();
 				break;
 			case 'A':
-				if( argv[0] == -1 ) {
+				if( argv[0] <1 ) {
 					argv[0] = 1;
 				}
 				crow = Math.max( crow - argv[0], topmargin );
 				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " A" );
 				break;
 			case 'B':
-				if( argv[0] == -1 ) {
+				if( argv[0] <1 ) {
 					argv[0] = 1;
 				}
 				crow = Math.min( crow + argv[0], buttommargin );
 				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " B" );
 				break;
 			case 'C':
-				if( argv[0] == -1 ) {
+				if( argv[0] <1 ) {
 					argv[0] = 1;
 				}
 				ccol = Math.min( ccol + argv[0], rightmargin );
 				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " C" );
 				break;
 			case 'D':
-				if( argv[0] == -1 ) {
+				if( argv[0] <1 ) {
 					argv[0] = 1;
 				}
 				ccol = Math.max( ccol - argv[0], leftmargin );
@@ -2010,7 +2010,7 @@ public class VT100 extends JComponent
 			case '8': // 0x38
 				restore_cursor_position();
 				break;
-			case '=': // 0x3d 
+			case '=': // 0x3d
 				keypadmode = APPLICATION_KEYPAD;
 				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Set application keypad mode" );
 				break;
@@ -2030,17 +2030,33 @@ public class VT100 extends JComponent
 				index();
 				ccol=leftmargin;
 				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Next line" );
+				break;
 			case 'F': // 0x4d
 				conv.setUseC1CharSet(true);
 				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Alternative character set " );
+				break;
 			case 'G': // 0x4d
 				conv.setUseC1CharSet(false);
 				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Basic character set" );
+				break;
+			case 'J': // 0x4d
+				erasescreen (2);
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Erase from the cursor to the end of the screen" );
+				break;
+			case 'K': // 0x4d
+				eraseline (crow,0);
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Erase from the cursor to the end of the line" );
+				break;
 			case '[': // 0x5b
 				parse_csi();
 				break;
 			case ']':
 				parse_text_parameter();
+				break;
+			case 'H':
+			case '#':
+				ccol=1;
+				crow=1;
 				break;
 			default:
 				CLASS_LOGGER.warn( "Unknown control sequence: ESC " + (char)b );

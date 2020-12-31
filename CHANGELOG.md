@@ -33,6 +33,11 @@ Changelog of this project.
 
 
 
+            **fixes #6**
+
+
+            [2d314b66ec6c482](https://github.com/<user>/<project>>/commit/2d314b66ec6c482) Jürgen Key *2021-12-31 17:31:12*
+
             **re #6**
 
 

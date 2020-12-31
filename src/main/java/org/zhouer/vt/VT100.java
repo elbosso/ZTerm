@@ -1249,7 +1249,7 @@ public class VT100 extends JComponent
 		}
 
 		for( i = begin; i <= end; i++ ) {
-			eraseChar( row, i );
+			reset( row, i );
 		}
 	}
 	private void eraseChar(int row, int col)
@@ -1257,7 +1257,7 @@ public class VT100 extends JComponent
 		int prow;
 
 		prow = physicalRow( row );
-CLASS_LOGGER.trace(row+" "+prow+" "+col);
+//CLASS_LOGGER.trace(row+" "+prow+" "+col);
 		text[prow][col - 1] = ((char)0);
 /*		mbc[prow][col - 1] = 0;
 
@@ -1327,14 +1327,24 @@ CLASS_LOGGER.trace(row+" "+prow+" "+col);
 	 */
 	private void reverseindex()
 	{
-		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("reverse index at " + crow );
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("reverse index at " + crow );
 		if( crow == topmargin ) {
 			insertline( crow, 1 );
 		} else {
 			crow--;
 		}
 	}
-	
+	private void index()
+	{
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("index at " + crow );
+		crow++;
+		// 到 buttommargin 就該捲頁
+		if( crow > buttommargin ) {
+			scrollpage(1);
+			crow--;
+		}
+	}
+
 	/**
 	 * 設定邊界
 	 * @param top 上邊界
@@ -1404,6 +1414,7 @@ CLASS_LOGGER.trace(row+" "+prow+" "+col);
 	{
 		if ( c == 0 ) {
 			cfgcolor = defFg;
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("setting foreground color to "+defFg);
 			cbgcolor = defBg;
 			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("setting background color to "+defBg);
 			cattribute = defAttr;
@@ -1417,6 +1428,7 @@ CLASS_LOGGER.trace(row+" "+prow+" "+col);
 			cattribute ^= REVERSE;
 		} else if ( 30 <= c && c <= 37 ) {
 			cfgcolor = (byte)(c - 30);
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("setting foreground color to "+(byte)(c - 30));
 		} else if ( 40 <= c && c <= 47 ) {
 			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("setting background color to "+(byte)(c - 40));
 			cbgcolor = (byte)(c - 40);
@@ -1839,6 +1851,33 @@ CLASS_LOGGER.trace(row+" "+prow+" "+col);
 					eraseChar(crow, ccol+ii);
 				}
 				break;
+			case 'c':
+				// https://invisible-island.net/xterm/ctlseqs/ctlseqs.txt
+				CLASS_LOGGER.trace( "Send Device Attributes (Primary DA): "+(byte)argv[0]);
+				switch(argv[0])
+				{
+					case 0:
+					{
+						parent.writeByte((byte)27);
+						parent.writeByte((byte)'?');
+						parent.writeByte((byte)'1');
+						parent.writeByte((byte)';');
+						parent.writeByte((byte)'0');
+						parent.writeByte((byte)'c');
+						break;
+					}
+					default:
+					{
+						CLASS_LOGGER.warn("not yet implemented!");
+					}
+				}
+				break;
+			case 'f':
+				//Horizontal and Vertical Position [row;column]
+				CLASS_LOGGER.trace("setting position to row "+argv[0]+" and column "+argv[1]);
+				crow=argv[0];
+				ccol=argv[1];
+				break;
 			default:
 				// TODO
 				CLASS_LOGGER.warn( "Unknown control sequence: ESC [ " + (char)b +" "+argc);
@@ -1968,16 +2007,30 @@ CLASS_LOGGER.trace(row+" "+prow+" "+col);
 				break;
 			case '=': // 0x3d 
 				keypadmode = APPLICATION_KEYPAD;
-				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Set application keypad mode" );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Set application keypad mode" );
 				break;
 			case '>': // 0x3e
 				keypadmode = NUMERIC_KEYPAD;
-				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Set numeric keypad mode" );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Set numeric keypad mode" );
 				break;
 			case 'M': // 0x4d
 				reverseindex();
-				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Reverse index" );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Reverse index" );
 				break;
+			case 'D': // 0x4d
+				index();
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "index" );
+				break;
+			case 'E': // 0x4d
+				index();
+				ccol=leftmargin;
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Next line" );
+			case 'F': // 0x4d
+				conv.setUseC1CharSet(true);
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Alternative character set " );
+			case 'G': // 0x4d
+				conv.setUseC1CharSet(false);
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Basic character set" );
 			case '[': // 0x5b
 				parse_csi();
 				break;
@@ -2024,12 +2077,7 @@ CLASS_LOGGER.trace(row+" "+prow+" "+col);
 			}
 			break;
 		case 10: // LF (Line Feed)
-			crow++;
-			// 到 buttommargin 就該捲頁
-			if( crow > buttommargin ) {
-				scrollpage(1);
-				crow--;
-			}
+			index();
 			boolean insertCR = resource!=null?resource.getBooleanValue( Config.LF_IS_CR ):false;
 			if(insertCR)
 				ccol=leftmargin;
@@ -2086,7 +2134,7 @@ CLASS_LOGGER.trace(row+" "+prow+" "+col);
 		// 一般而言游標都在下一個字將會出現的地方，但若最後一個字在行尾（下一個字應該出現在行首），
 		// 游標會在最後一個字上，也就是當最後一個字出現在行尾時並不會影響游標位置，
 		// 游標會等到下一個字出現時才移到下一行。
-		if( linefull || (isWide && ccol + 1 > rightmargin) ) {
+		if(( linefull || (isWide && ccol + 1 > rightmargin) )|| (!isWide && ccol > rightmargin)){
 			linefull = false;
 			ccol = leftmargin;
 			crow++;
@@ -2112,6 +2160,7 @@ CLASS_LOGGER.trace(row+" "+prow+" "+col);
 
 		// 紀錄暫存的資料，寬字元每個字最多用兩個 bytes，一般字元每字一個 byte
 		for(int i = 0; i < (isWide ? Math.min(textBufPos, 2) : 1); i++) {
+			CLASS_LOGGER.trace("setting fg color to "+fgBuf[i]+" for "+c+" in "+prow);
 			fgcolors[prow][ccol + i - 1] = fgBuf[i];
 			bgcolors[prow][ccol + i - 1] = bgBuf[i];
 			attributes[prow][ccol + i - 1] = attrBuf[i];
@@ -2142,6 +2191,7 @@ CLASS_LOGGER.trace(row+" "+prow+" "+col);
 	{
 		// XXX: 表格內有些未知字元會填入 '?', 因此可能會有 c < 127 但 textBufPos > 1 的狀況。
 		char c = conv.bytesToChar( textBuf, 0, textBufPos, encoding );
+		CLASS_LOGGER.trace(crow+" "+ccol+" "+c);
 		insertChar(c);
 	}
 	

@@ -273,6 +273,7 @@ public class Convertor
 //			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace(c+" "+offset+" "+limit+" "+buf[offset]);
 		if((limit==1)&&(((buf[offset]-96>-1)&&(buf[offset]-96<DEC_SPECIAL_CHARS.length))&&(isUseC1CharSet())))//((c=='x')||(c=='q')))
 			c=(char)(DEC_SPECIAL_CHARS[buf[offset]-96][0]);
+		//CLASS_LOGGER.trace(c);
 		return c;
 	}
 	

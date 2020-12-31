@@ -26,6 +26,18 @@ Changelog of this project.
 
 
 
+            **re #5**
+
+
+            [ea7b2d5c6c6474a](https://github.com/<user>/<project>>/commit/ea7b2d5c6c6474a) Jürgen Key *2021-12-31 12:49:19*
+
+
+
+            **Update README.md**
+
+
+            [979f58da87354f3](https://github.com/<user>/<project>>/commit/979f58da87354f3) Jürgen Key *2021-12-31 12:52:51*
+
             **got auxiliary character set now working - thanks to https://github.com/jawi/jVT220**
 
 

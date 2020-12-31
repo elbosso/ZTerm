@@ -50,5 +50,8 @@ The project has at the moment altogether four emulation modes:
 It is advisable to only use *vt100* or *xterm-color* in production at the moment as the other two fail even with the aforementioned 
 `dialog`-test.
 
-
+It is also advisable to explicitly set the `TERM` environment variable if you are going to start a shell (or
+any other process for that matter) inside the emulator because else you get the terminal type `dumb` 
+and that leads to all kinds of problems. And please try not to be funny by setting this environment variable
+to anythong other then the choosen emulation (see VT100Tester for examples).
 

@@ -246,9 +246,13 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 */
 				org.zhouer.zterm.Site site=new org.zhouer.zterm.Site("huhu", "pirxhome.fritz.box", 22, Protocol.PTYINOUT);
 				site.encoding=java.nio.charset.StandardCharsets.UTF_8.name();
+				site.emulation="xterm-color";//use vt100 or xterm-color here, the other options are broken (ansi, xterm)
 				resource.setArray(Config.CMD_LINE,new Vector(Arrays.asList(new String[]{"/usr/bin/top"})));
+//				resource.setArray(Config.CMD_LINE,new Vector(Arrays.asList(new String[]{"/usr/bin/screen","-DRR"})));
+				resource.setArray(Config.CMD_LINE,new Vector(Arrays.asList(new String[]{"/usr/bin/vttest"})));
 				resource.setArray(Config.CMD_LINE,new Vector(Arrays.asList(new String[]{"/bin/bash","-l"})));
-				resource.setArray(Config.ENV_MAP,new Vector(Arrays.asList(new String[]{"TERM=xterm","HOME="+System.getProperty("user.home")})));
+				//https://www.tutorialspoint.com/retrieve-environment-variables-with-java-map-collection
+				resource.setArray(Config.ENV_MAP,new Vector(Arrays.asList(new String[]{"TERM="+site.emulation,"HOME="+System.getProperty("user.home")})));
 				vt100.connect(site);
 
 //				disConnectAction.setEnabled(true);

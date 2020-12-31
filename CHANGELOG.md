@@ -26,6 +26,26 @@ Changelog of this project.
 
 
 
+            **documentation efforts**
+
+
+            [b64738009180b65](https://github.com/<user>/<project>>/commit/b64738009180b65) Jürgen Key *2021-12-31 09:03:19*
+
+            **Update README.md**
+
+
+            [87168fa2acd20fd](https://github.com/<user>/<project>>/commit/87168fa2acd20fd) Jürgen Key *2021-12-31 08:57:36*
+
+            **Update README.md**
+
+
+            [5115080e1d4d758](https://github.com/<user>/<project>>/commit/5115080e1d4d758) Jürgen Key *2021-12-31 08:53:14*
+
+            **Create README.md**
+
+
+            [c2c94489da89397](https://github.com/<user>/<project>>/commit/c2c94489da89397) Jürgen Key *2021-12-31 08:52:01*
+
             **fixed some minor glitches preventing the examples from running**
 
 

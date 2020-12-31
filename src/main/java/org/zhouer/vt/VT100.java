@@ -1552,11 +1552,15 @@ public class VT100 extends JComponent
 	
 	private void set_mode( int m )
 	{
+		System.out.println("set_mode "+m);
 		// TODO
 		switch( m ) {
 		case 1:
 			keypadmode = APPLICATION_KEYPAD;
 			break;
+			case 4:
+				conv.setUseC1CharSet(false);
+				break;
 		case 12:
 			// TODO: start blinking cursor, ignore
 			break;
@@ -1585,11 +1589,12 @@ public class VT100 extends JComponent
 	
 	private void reset_mode( int m )
 	{
+		System.out.println("reset_mode "+m);
 		// TODO
 		switch( m ) {
-		case 1:
-			keypadmode = NUMERIC_KEYPAD;
-			break;
+			case 1:
+				keypadmode = NUMERIC_KEYPAD;
+				break;
 		case 12:
 			// TODO: stop blinking cursor, ignore
 			break;
@@ -1642,20 +1647,20 @@ public class VT100 extends JComponent
 		switch( b ) {
 			case 'd':
 				// 設定 row
-				// System.out.print("line position absolute (VPA)");
+				 System.out.print("line position absolute (VPA)");
 				if( argv[0] == -1 ) {
 					argv[0] = 1;
 				}
 				crow = argv[0];
 				break;
 			case 'h':
-				// System.out.println( "set mode" );
+				 System.out.println( "set mode" );
 				for( i = 0; i < argc; i++ ) {
 					set_mode( argv[i] );
 				}
 				break;
 			case 'l':
-				// System.out.println( "reset mode" );
+				 System.out.println( "reset mode" );
 				for( i = 0; i < argc; i++ ) {
 					reset_mode( argv[i] );
 				}
@@ -1829,6 +1834,7 @@ public class VT100 extends JComponent
 		
 		if( a == '(' ) {
 			// Select G0 Character Set (SCS)
+			System.out.println("Select G0 Character Set (SCS) "+b);
 			switch( b ) {
 			case '0':
 				break;
@@ -1845,8 +1851,10 @@ public class VT100 extends JComponent
 			}
 		} else if( a == ')' ) {
 			// Select G1 Character Set (SCS)
+			System.out.println("Select G1 Character Set (SCS) "+b);
 			switch( b ) {
 			case '0':
+				conv.setUseC1CharSet(true);
 				break;
 			case '1':
 				break;
@@ -2002,7 +2010,7 @@ public class VT100 extends JComponent
 		
 		// XXX: 表格內有些未知字元會填入 '?', 因此可能會有 c < 127 但 textBufPos > 1 的狀況。
 		c = conv.bytesToChar( textBuf, 0, textBufPos, encoding );
-		isWide = Convertor.isWideChar( c );
+		isWide = conv.isWideChar( c );
 		
 		// 一般而言游標都在下一個字將會出現的地方，但若最後一個字在行尾（下一個字應該出現在行首），
 		// 游標會在最後一個字上，也就是當最後一個字出現在行尾時並不會影響游標位置，

@@ -9,11 +9,59 @@ public class Convertor
 	private byte[] big5bytes;
 	private byte[] ucs2bytes;
 	private char[] ucs2chars;
-	
-	public static boolean isWideChar( char c )
+	private boolean useC1CharSet;
+
+	//from https://github.com/jawi/jVT220/blob/master/src/nl/lxtreme/jvt220/terminal/vt220/CharacterSets.java
+	private static Object DEC_SPECIAL_CHARS[][] = { { '\u25c6', null }, // black_diamond
+			{ '\u2592', null }, // Medium Shade
+			{ '\u2409', null }, // Horizontal tab (HT)
+			{ '\u240c', null }, // Form Feed (FF)
+			{ '\u240d', null }, // Carriage Return (CR)
+			{ '\u240a', null }, // Line Feed (LF)
+			{ '\u00b0', null }, // Degree sign
+			{ '\u00b1', null }, // Plus/minus sign
+			{ '\u2424', null }, // New Line (NL)
+			{ '\u240b', null }, // Vertical Tab (VT)
+			{ '\u2518', null }, // Forms light up and left
+			{ '\u2510', null }, // Forms light down and left
+			{ '\u250c', null }, // Forms light down and right
+			{ '\u2514', null }, // Forms light up and right
+			{ '\u253c', null }, // Forms light vertical and horizontal
+			{ '\u23ba', null }, // Scan 1
+			{ '\u23bb', null }, // Scan 3
+			{ '\u2500', null }, // Scan 5 / Horizontal bar
+			{ '\u23bc', null }, // Scan 7
+			{ '\u23bd', null }, // Scan 9
+			{ '\u251c', null }, // Forms light vertical and right
+			{ '\u2524', null }, // Forms light vertical and left
+			{ '\u2534', null }, // Forms light up and horizontal
+			{ '\u252c', null }, // Forms light down and horizontal
+			{ '\u2502', null }, // vertical bar
+			{ '\u2264', null }, // less than or equal sign
+			{ '\u2265', null }, // greater than or equal sign
+			{ '\u03c0', null }, // pi
+			{ '\u2260', null }, // not equal sign
+			{ '\u00a3', null }, // pound sign
+			{ '\u00b7', null }, // middle dot
+			{ ' ', null }, //
+	};
+
+	public boolean isUseC1CharSet()
+	{
+		return useC1CharSet;
+	}
+
+	public void setUseC1CharSet(boolean useC1CharSet)
+	{
+		boolean old = isUseC1CharSet();
+		this.useC1CharSet = useC1CharSet;
+//		send("useC1CharSet", old, isUseC1CharSet());
+	}
+
+	public boolean isWideChar(char c )
 	{
 		// TODO: 應該改用更好的寫法判斷是否為寬字元，暫時假設非 ASCII 字元皆為寬字元。
-		if( c > 127 )
+		if(( c > 127 )&&(isUseC1CharSet()==false))
 			return true;
 		return false;
 	}
@@ -52,6 +100,7 @@ public class Convertor
 		if( encoding.equalsIgnoreCase("Big5") ) {
 			return big5BytesToChar( b, from, limit );
 		} else if( encoding.equalsIgnoreCase(java.nio.charset.StandardCharsets.UTF_8.name()) ) {
+			//System.out.println("bytesToChar");
 			return utf8BytesToChar( b, from, limit );
 		} else {
 			// TODO: 其他的編碼
@@ -220,7 +269,10 @@ public class Convertor
 			c <<= 6;
 			c |= (char)(buf[3] & 0x3f);
 		}
-		
+//		if(c!=' ')
+//			System.out.println(c+" "+offset+" "+limit+" "+buf[offset]);
+		if((limit==1)&&(((buf[offset]-96>-1)&&(buf[offset]-96<DEC_SPECIAL_CHARS.length))&&(isUseC1CharSet())))//((c=='x')||(c=='q')))
+			c=(char)(DEC_SPECIAL_CHARS[buf[offset]-96][0]);
 		return c;
 	}
 	

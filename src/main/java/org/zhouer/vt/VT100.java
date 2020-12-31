@@ -20,6 +20,7 @@ import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.Timer;
 
+import org.apache.log4j.Priority;
 import org.zhouer.utils.Convertor;
 import org.zhouer.utils.TextUtils;
 
@@ -235,6 +236,8 @@ public class VT100 extends JComponent
 	
 	// 紀錄是否所有初始化動作皆已完成
 	private boolean init_ready;
+
+	private char lastCharInserted;
 	
 	private void initValue()
 	{
@@ -448,16 +451,16 @@ public class VT100 extends JComponent
 		
 		// 設定 size
 		fontsize = resource!=null?resource.getIntValue( Config.FONT_SIZE ):0;
-		System.out.println("fontsize  "+fontsize);
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("fontsize  "+fontsize);
 
 		if( fontsize == 0 ) {
 			// 按照螢幕的大小設定
-			System.out.println(height+" "+maxrow+" "+fontverticalgap);
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace(height+" "+maxrow+" "+fontverticalgap);
 			fw = width / maxcol - fonthorizontalgap;
 			fh = height / maxrow - fontverticalgap;
 			
 /*			if( fh > 2 * fw ) {
-				System.out.println("correction");
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("correction");
 				fh = 2 * fw;
 			}
 */			fontsize = fh;
@@ -473,7 +476,7 @@ public class VT100 extends JComponent
 		}
 		
 		// 建立 font instance
-		System.out.println("fontsize  "+fontsize);
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("fontsize  "+fontsize);
 		int targetfontsize=fontsize;
 		fontheight=100000;
 		while(fontheight>targetfontsize)
@@ -488,7 +491,7 @@ public class VT100 extends JComponent
 			fontdescent = (int) (1.0 * fm.getDescent());
 			fontascent = (int) (1.0 * fm.getAscent());
 			fontleading = (int) (1.0 * fm.getLeading());
-			System.out.println(fontheight + " " + fm.getHeight() + " " + fm.getLeading() + " " + fm.getAscent() + " " + fm.getDescent());
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace(fontheight + " " + fm.getHeight() + " " + fm.getLeading() + " " + fm.getAscent() + " " + fm.getDescent());
 			--fontsize;
 		}
 		fontheight += fontverticalgap;
@@ -508,7 +511,7 @@ public class VT100 extends JComponent
 	public void setScrollUp( int scroll )
 	{
 		scrolluprow = scroll;
-		// System.out.println( "scroll up " + scroll + " lines" );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "scroll up " + scroll + " lines" );
 		// TODO: 應改可以不用每次都重繪整個畫面
 		for( int i = 1; i <= maxrow; i++ ) {
 			for( int j = 1; j <= maxcol; j++ ) {
@@ -1128,7 +1131,7 @@ public class VT100 extends JComponent
 		mbc[prow][col - 1] = 0;
 		
 		fgcolors[prow][col - 1] = defFg;
-		bgcolors[prow][col - 1] = defBg;
+		bgcolors[prow][col - 1] = cbgcolor;//defBg;
 		attributes[prow][col - 1] = defAttr;
 		isurl[prow][col - 1] = false;
 		
@@ -1160,7 +1163,7 @@ public class VT100 extends JComponent
 	{
 		int i, j;
 		
-		// System.out.println( "delete " + n + " lines, at (" + crow + ", " + ccol + ")" );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "delete " + n + " lines, at (" + crow + ", " + ccol + ")" );
 		
 		// 刪除的部份超過 buttommargin, 從目前位置到 buttommargin 都清除
 		if( crow + n > buttommargin ) {
@@ -1187,7 +1190,7 @@ public class VT100 extends JComponent
 	 */
 	private void insert_space( int n )
 	{
-		// System.out.println( "insert " + n + " space, at (" + crow + ", " + ccol + ")" );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "insert " + n + " space, at (" + crow + ", " + ccol + ")" );
 		
 		for( int i = rightmargin; i >= ccol; i--) {
 			if( i >= ccol + n ) {
@@ -1204,7 +1207,7 @@ public class VT100 extends JComponent
 	 */
 	private void delete_characters( int n )
 	{
-		// System.out.println( "delete " + n + " characters, at (" + crow + ", " + ccol + ")" );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "delete " + n + " characters, at (" + crow + ", " + ccol + ")" );
 		
 		// 目前位置加 n 到行尾的字元往前移，後面則清除
 		for( int i = ccol; i <= maxcol; i++ ) {
@@ -1224,7 +1227,7 @@ public class VT100 extends JComponent
 	private void eraseline( int row, int mode ) {
 		int i, begin, end;
 
-		// System.out.println("erase line: " + row );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("erase line: " + row );
 		
 		switch( mode ) {
 			case 0:
@@ -1246,8 +1249,24 @@ public class VT100 extends JComponent
 		}
 
 		for( i = begin; i <= end; i++ ) {
-			reset( row, i );
+			eraseChar( row, i );
 		}
+	}
+	private void eraseChar(int row, int col)
+	{
+		int prow;
+
+		prow = physicalRow( row );
+CLASS_LOGGER.trace(row+" "+prow+" "+col);
+		text[prow][col - 1] = ((char)0);
+/*		mbc[prow][col - 1] = 0;
+
+		fgcolors[prow][col - 1] = defFg;
+*/		bgcolors[prow][col - 1] = cbgcolor;//defBg;
+/*		attributes[prow][col - 1] = defAttr;
+*/		isurl[prow][col - 1] = false;
+
+		setRepaint( row, col );
 	}
 	
 	/**
@@ -1291,7 +1310,7 @@ public class VT100 extends JComponent
 	 */
 	private void insertline( int r, int n )
 	{
-		// System.out.println( "insert " + n + " line after " + r + " line");
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "insert " + n + " line after " + r + " line");
 		for(int i = buttommargin; i >= r; i--) {
 			for(int j = leftmargin; j <= rightmargin; j++) {
 				if( i >= r + n ) {
@@ -1308,7 +1327,7 @@ public class VT100 extends JComponent
 	 */
 	private void reverseindex()
 	{
-		// System.out.println("reverse index at " + crow );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("reverse index at " + crow );
 		if( crow == topmargin ) {
 			insertline( crow, 1 );
 		} else {
@@ -1335,7 +1354,7 @@ public class VT100 extends JComponent
 	{
 		int i, j;
 		
-		// System.out.println("scroll " + line + " lines");
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("scroll " + line + " lines");
 		
 		if( topmargin == 1 && buttommargin == maxrow ) {
 			toprow += line;
@@ -1386,6 +1405,7 @@ public class VT100 extends JComponent
 		if ( c == 0 ) {
 			cfgcolor = defFg;
 			cbgcolor = defBg;
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("setting background color to "+defBg);
 			cattribute = defAttr;
 		} else if ( c == 1 ) {
 			cattribute |= BOLD;
@@ -1398,6 +1418,7 @@ public class VT100 extends JComponent
 		} else if ( 30 <= c && c <= 37 ) {
 			cfgcolor = (byte)(c - 30);
 		} else if ( 40 <= c && c <= 47 ) {
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("setting background color to "+(byte)(c - 40));
 			cbgcolor = (byte)(c - 40);
 		}
 	}
@@ -1552,7 +1573,7 @@ public class VT100 extends JComponent
 	
 	private void set_mode( int m )
 	{
-		System.out.println("set_mode "+m);
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("set_mode "+m);
 		// TODO
 		switch( m ) {
 		case 1:
@@ -1563,12 +1584,29 @@ public class VT100 extends JComponent
 				break;
 		case 12:
 			// TODO: start blinking cursor, ignore
+			CLASS_LOGGER.warn("not yet implemented: set_mode "+m+" start blinking cursor");
 			break;
-		case 25:
-			// TODO: show cursor, ignore
-			break;
+			case 25:
+				// TODO: show cursor, ignore
+				CLASS_LOGGER.warn("not yet implemented: set_mode "+m+" show cursor");
+				break;
+			case 1000:
+				// TODO: Send Mouse X & Y on button press and release
+				//https://invisible-island.net/xterm/ctlseqs/ctlseqs.txt
+				CLASS_LOGGER.warn("not yet implemented: set_mode "+m+" Send Mouse X & Y on button press and release.  See the section Mouse Tracking.  This is the X11 xterm mouse protocol");
+				break;
+			case 1049:
+				// TODO: Save cursor as in DECSC, xterm
+				//https://invisible-island.net/xterm/ctlseqs/ctlseqs.txt
+				CLASS_LOGGER.warn("not yet implemented: set_mode "+m+" Save cursor as in DECSC, xterm.  After\n" +
+						"          saving the cursor, switch to the Alternate Screen Buffer,\n" +
+						"          clearing it first.  This may be disabled by the titeInhibit\n" +
+						"          resource.  This control combines the effects of the 1 0 4 7\n" +
+						"          and 1 0 4 8  modes.  Use this with terminfo-based applications\n" +
+						"          rather than the 4 7  mode");
+				break;
 		default:
-			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Set mode " + m + " not support.");
+			CLASS_LOGGER.warn("Set mode " + m + " not support.");
 			break;
 		}
 	}
@@ -1577,19 +1615,19 @@ public class VT100 extends JComponent
 	{
 		scol = ccol;
 		srow = crow;
-		// System.out.println( "Save cursor position." );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Save cursor position." );
 	}
 	
 	private void restore_cursor_position()
 	{
 		ccol = scol;
 		crow = srow;
-		// System.out.println( "Restore cursor position." );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Restore cursor position." );
 	}
 	
 	private void reset_mode( int m )
 	{
-		System.out.println("reset_mode "+m);
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("reset_mode "+m);
 		// TODO
 		switch( m ) {
 			case 1:
@@ -1602,7 +1640,7 @@ public class VT100 extends JComponent
 			// TODO: hide cursor, ignore
 			break;
 		default:
-			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Reset mode " + m + " not support.");
+			CLASS_LOGGER.warn("Reset mode " + m + " not support.");
 			break;
 		}
 	}
@@ -1654,13 +1692,13 @@ public class VT100 extends JComponent
 				crow = argv[0];
 				break;
 			case 'h':
-				 System.out.println( "set mode" );
+				 if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "set mode" );
 				for( i = 0; i < argc; i++ ) {
 					set_mode( argv[i] );
 				}
 				break;
 			case 'l':
-				 System.out.println( "reset mode" );
+				 if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "reset mode" );
 				for( i = 0; i < argc; i++ ) {
 					reset_mode( argv[i] );
 				}
@@ -1676,7 +1714,7 @@ public class VT100 extends JComponent
 				break;
 			case 'r':
 				setmargin( argv[0], argv[1] );
-				// System.out.println( "Set scroll margin: " + argv[0] + ", " + argv[1] );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Set scroll margin: " + argv[0] + ", " + argv[1] );
 				break;
 			case 's':
 				save_cursor_position();
@@ -1689,28 +1727,28 @@ public class VT100 extends JComponent
 					argv[0] = 1;
 				}
 				crow = Math.max( crow - argv[0], topmargin );
-				// System.out.println( argv[0] + " A" );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " A" );
 				break;
 			case 'B':
 				if( argv[0] == -1 ) {
 					argv[0] = 1;
 				}
 				crow = Math.min( crow + argv[0], buttommargin );
-				// System.out.println( argv[0] + " B" );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " B" );
 				break;
 			case 'C':
 				if( argv[0] == -1 ) {
 					argv[0] = 1;
 				}
 				ccol = Math.min( ccol + argv[0], rightmargin );
-				// System.out.println( argv[0] + " C" );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " C" );
 				break;
 			case 'D':
 				if( argv[0] == -1 ) {
 					argv[0] = 1;
 				}
 				ccol = Math.max( ccol - argv[0], leftmargin );
-				// System.out.println( argv[0] + " D" );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " D" );
 				break;
 			case 'H':
 				// ESC [ Pl ; Pc H
@@ -1727,28 +1765,28 @@ public class VT100 extends JComponent
 				
 				crow = Math.min( Math.max( argv[0], topmargin ), buttommargin );
 				ccol = Math.min( Math.max( argv[1], leftmargin ), rightmargin );
-				// System.out.println( argv[0] + " " + argv[1] + " H" );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " " + argv[1] + " H" );
 				break;
 			case 'J':
 				if( argv[0] == -1 ) {
 					argv[0] = 0;
 				}
 				erasescreen( argv[0] );
-				// System.out.println( argv[0] + " J" );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " J" );
 				break;
 			case 'K':
 				if( argv[0] == -1 ) {
 					argv[0] = 0;
 				}
 				eraseline( crow, argv[0] );
-				// System.out.println( argv[0] + " K" );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " K" );
 				break;
 			case 'L':
 				if( argv[0] == -1 ) {
 					argv[0] = 1;
 				}
 				insertline( crow, argv[0] );
-				// System.out.println( argv[0] + " L" );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " L" );
 				break;
 			case 'M':
 				if( argv[0] == -1 ) {
@@ -1774,12 +1812,40 @@ public class VT100 extends JComponent
 				if( b == 'c' ) {
 					if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Send Secondary Device Attributes String" );
 				} else {
-					if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Unknown control sequence: ESC [ > " + (char)b );
+					CLASS_LOGGER.warn( "Unknown control sequence: ESC [ > " + (char)b );
+				}
+				break;
+			case 'b':
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "repeat preceeding character (" +lastCharInserted+") "+argv[0]+ " times!");
+				for(int ii=0;ii<argv[0];++ii)
+				{
+					insertChar(lastCharInserted);
+				}
+				break;
+			case 't':
+				// TODO
+				// https://invisible-island.net/xterm/ctlseqs/ctlseqs.txt
+				CLASS_LOGGER.info( "Window manipulation (XTWINOPS), dtterm, extended by xterm.: ESC [ " + (char)b +" "+argc);
+				for(int ii=0;ii<argc;++ii)
+				{
+					if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("parameter "+ii+" |" + (char)argv[ii] +"| "+argv[ii]);
+				}
+				break;
+			case 'X':
+				// https://invisible-island.net/xterm/ctlseqs/ctlseqs.txt
+				CLASS_LOGGER.trace( "erase "+argv[0]+" characters beginning at col "+ccol+" in row "+crow);
+				for(int ii=0;ii<argv[0];++ii)
+				{
+					eraseChar(crow, ccol+ii);
 				}
 				break;
 			default:
 				// TODO
-				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Unknown control sequence: ESC [ " + (char)b );
+				CLASS_LOGGER.warn( "Unknown control sequence: ESC [ " + (char)b +" "+argc);
+				for(int ii=0;ii<argc;++ii)
+				{
+					if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("parameter "+ii+" |" + (char)argv[ii] +"| "+argv[ii]);
+				}
 				break;
 		}
 	}
@@ -1834,35 +1900,44 @@ public class VT100 extends JComponent
 		
 		if( a == '(' ) {
 			// Select G0 Character Set (SCS)
-			System.out.println("Select G0 Character Set (SCS) "+b);
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Select G0 Character Set (SCS) "+b+" "+(char)b);
 			switch( b ) {
 			case '0':
+				conv.setUseC1CharSet(true);
 				break;
 			case '1':
+				CLASS_LOGGER.warn("Not yet implemented: Select G0 Character Set (SCS) "+b+" "+(char)b);
 				break;
 			case '2':
+				CLASS_LOGGER.warn("Not yet implemented: Select G0 Character Set (SCS) "+b+" "+(char)b);
 				break;
 			case 'A':
+				CLASS_LOGGER.warn("Not yet implemented: Select G0 Character Set (SCS) "+b+" "+(char)b);
 				break;
 			case 'B':
+				conv.setUseC1CharSet(false);
 				break;
 			default:
 				break;
 			}
 		} else if( a == ')' ) {
 			// Select G1 Character Set (SCS)
-			System.out.println("Select G1 Character Set (SCS) "+b);
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Select G1 Character Set (SCS) "+b);
 			switch( b ) {
 			case '0':
 				conv.setUseC1CharSet(true);
 				break;
 			case '1':
+				CLASS_LOGGER.warn("Not yet implemented: Select G0 Character Set (SCS) "+b+" "+(char)b);
 				break;
 			case '2':
+				CLASS_LOGGER.warn("Not yet implemented: Select G0 Character Set (SCS) "+b+" "+(char)b);
 				break;
 			case 'A':
+				CLASS_LOGGER.warn("Not yet implemented: Select G0 Character Set (SCS) "+b+" "+(char)b);
 				break;
 			case 'B':
+				CLASS_LOGGER.warn("Not yet implemented: Select G0 Character Set (SCS) "+b+" "+(char)b);
 				break;
 			default:
 				break;
@@ -1893,15 +1968,15 @@ public class VT100 extends JComponent
 				break;
 			case '=': // 0x3d 
 				keypadmode = APPLICATION_KEYPAD;
-				// System.out.println( "Set application keypad mode" );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Set application keypad mode" );
 				break;
 			case '>': // 0x3e
 				keypadmode = NUMERIC_KEYPAD;
-				// System.out.println( "Set numeric keypad mode" );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Set numeric keypad mode" );
 				break;
 			case 'M': // 0x4d
 				reverseindex();
-				// System.out.println( "Reverse index" );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Reverse index" );
 				break;
 			case '[': // 0x5b
 				parse_csi();
@@ -1910,7 +1985,7 @@ public class VT100 extends JComponent
 				parse_text_parameter();
 				break;
 			default:
-				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Unknown control sequence: ESC " + (char)b );
+				CLASS_LOGGER.warn( "Unknown control sequence: ESC " + (char)b );
 				break;
 		}
 	}
@@ -2001,17 +2076,13 @@ public class VT100 extends JComponent
 			break;
 		}
 	}
-	
-	private void insertTextBuf()
+
+	private void insertChar(char c)
 	{
-		char c;
 		boolean isWide;
 		int prow;
-		
-		// XXX: 表格內有些未知字元會填入 '?', 因此可能會有 c < 127 但 textBufPos > 1 的狀況。
-		c = conv.bytesToChar( textBuf, 0, textBufPos, encoding );
 		isWide = conv.isWideChar( c );
-		
+
 		// 一般而言游標都在下一個字將會出現的地方，但若最後一個字在行尾（下一個字應該出現在行首），
 		// 游標會在最後一個字上，也就是當最後一個字出現在行尾時並不會影響游標位置，
 		// 游標會等到下一個字出現時才移到下一行。
@@ -2023,38 +2094,38 @@ public class VT100 extends JComponent
 				scrollpage(1);
 				crow--;
 			}
-			
+
 			// 游標會跳過行首，所以需要手動 setRepaint
 			setRepaint( crow, leftmargin );
 		}
-		
+
 		// 一個 char 可能對應數個 bytes, 但在顯示及儲存時最雙寬字多佔兩格，單寬字最多佔一格，
 		// 紀錄 char 後要把對應的屬性及色彩等資料從 buffer 複製過來，並設定重繪。
 		prow = physicalRow( crow );
 		text[prow][ccol - 1] = c;
-		
+
 		// 到這裡我們才知道字元真正被放到陣列中的位置，所以現在才紀錄 url 的位置
 		if( addurl ) {
 			// XXX: 假設 column 數小於 256
 			probablyurl.addElement( Integer.valueOf((prow << 8) | ( ccol - 1)) );
 		}
-		
+
 		// 紀錄暫存的資料，寬字元每個字最多用兩個 bytes，一般字元每字一個 byte
 		for(int i = 0; i < (isWide ? Math.min(textBufPos, 2) : 1); i++) {
 			fgcolors[prow][ccol + i - 1] = fgBuf[i];
 			bgcolors[prow][ccol + i - 1] = bgBuf[i];
 			attributes[prow][ccol + i - 1] = attrBuf[i];
 			mbc[prow][ccol + i - 1] = i + 1;
-			
+
 			// isurl 不同於 color 與 attribute, isurl 是在 setURL 內設定。
 			isurl[prow][ccol + i - 1] = false;
-			
+
 			setRepaint( crow, ccol + i );
 		}
-		
+
 		// 重設 textBufPos
 		textBufPos = 0;
-		
+
 		// 控制碼不會讓游標跑到 rightmargin 以後的地方，只有一般字元會，所以在這裡判斷 linefull 就可以了。
 		ccol++;
 		if( isWide ) {
@@ -2064,6 +2135,14 @@ public class VT100 extends JComponent
 			linefull = true;
 			ccol--;
 		}
+		lastCharInserted=c;
+	}
+
+	private void insertTextBuf()
+	{
+		// XXX: 表格內有些未知字元會填入 '?', 因此可能會有 c < 127 但 textBufPos > 1 的狀況。
+		char c = conv.bytesToChar( textBuf, 0, textBufPos, encoding );
+		insertChar(c);
 	}
 	
 	private void parse()
@@ -2305,7 +2384,7 @@ public class VT100 extends JComponent
 				repaint();
 			}
 		}
-//		System.out.println("terminating");
+//		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("terminating");
 	}
 	
 	protected void paintComponent( Graphics g )

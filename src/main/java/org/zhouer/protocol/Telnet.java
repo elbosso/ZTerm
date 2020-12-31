@@ -146,7 +146,7 @@ public class Telnet implements Protocol
 		byte b;
 
 		b = read();
-		// System.out.println("Will " + b );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Will " + b );
 
 		if( b == ECHO || b == SGA ) {
 			send_command( DO, b );
@@ -170,7 +170,7 @@ public class Telnet implements Protocol
 		byte b;
 
 		b = read();
-		// System.out.println("Do " + b );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Do " + b );
 		if( b == WS ) {
 			send_command( WILL, b );
 			// FIXME: Magic number (80x24)
@@ -363,7 +363,7 @@ public class Telnet implements Protocol
 		    dos.writeByte( (byte)(port & 0xff) );
 
 		} else {
-			// System.out.println("Connecting to host: " + host + ", port: " + port + " ...");
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Connecting to host: " + host + ", port: " + port + " ...");
 			s = new Socket( host, port );
 		}
 		
@@ -417,7 +417,7 @@ public class Telnet implements Protocol
 		}
 		
 		if( sock.isClosed() ) {
-			// System.out.println( "Connection closed!");
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Connection closed!");
 		} else {
 			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Disconnect failed!");
 		}

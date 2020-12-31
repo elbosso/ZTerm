@@ -100,7 +100,7 @@ public class Convertor
 		if( encoding.equalsIgnoreCase("Big5") ) {
 			return big5BytesToChar( b, from, limit );
 		} else if( encoding.equalsIgnoreCase(java.nio.charset.StandardCharsets.UTF_8.name()) ) {
-			//System.out.println("bytesToChar");
+			//if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("bytesToChar");
 			return utf8BytesToChar( b, from, limit );
 		} else {
 			// TODO: 其他的編碼
@@ -270,7 +270,7 @@ public class Convertor
 			c |= (char)(buf[3] & 0x3f);
 		}
 //		if(c!=' ')
-//			System.out.println(c+" "+offset+" "+limit+" "+buf[offset]);
+//			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace(c+" "+offset+" "+limit+" "+buf[offset]);
 		if((limit==1)&&(((buf[offset]-96>-1)&&(buf[offset]-96<DEC_SPECIAL_CHARS.length))&&(isUseC1CharSet())))//((c=='x')||(c=='q')))
 			c=(char)(DEC_SPECIAL_CHARS[buf[offset]-96][0]);
 		return c;

@@ -212,7 +212,7 @@ public class User extends java.lang.Object implements KeyListener, MouseListener
 	{
 		if (vt.isEnabled())
 		{
-			// System.out.println( "key typed: " + e );
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "key typed: " + e );
 
 			// 功能鍵，不理會
 			if (e.isAltDown() || e.isMetaDown())
@@ -222,7 +222,7 @@ public class User extends java.lang.Object implements KeyListener, MouseListener
 			// delete, enter, esc 會在 keyPressed 被處理 
 			if (e.getKeyChar() == KeyEvent.VK_ENTER)
 			{
-//			System.out.println(commandBuilder);
+//			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace(commandBuilder);
 				java.lang.String old = getCommand();
 				command = commandBuilder.toString();
 				pcs.firePropertyChange("command", old, getCommand());
@@ -276,7 +276,7 @@ public class User extends java.lang.Object implements KeyListener, MouseListener
 	{
 		if (vt.isEnabled())
 		{
-			// System.out.println( e );
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( e );
 
 			do
 			{

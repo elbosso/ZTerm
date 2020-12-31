@@ -26,6 +26,11 @@ Changelog of this project.
 
 
 
+            **got auxiliary character set now working - thanks to https://github.com/jawi/jVT220**
+
+
+            [e8e34ed47000416](https://github.com/<user>/<project>>/commit/e8e34ed47000416) Jürgen Key *2021-12-31 11:17:19*
+
             **documentation efforts**
 
 

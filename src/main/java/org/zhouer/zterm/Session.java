@@ -438,7 +438,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 			// lastInputTime 在 writeByte, writeBytes 會被更新。
 			long now = new Date().getTime();
 			if( antiidle && isConnected() && (now - lastInputTime > antiIdleInterval) ) {
-				// System.out.println( "Sent antiidle char" );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Sent antiidle char" );
 				// TODO: 設定 antiidle 送出的字元
 				if( site.protocol.equalsIgnoreCase( Protocol.TELNET ) ) {
 										
@@ -504,7 +504,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		}
 		else if( site.protocol.equalsIgnoreCase( Protocol.PTYINOUT ) )
 		{
-			System.out.println("TYINOUT");
+			if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("TYINOUT");
 			protocol=new PtyInOut(resource.getArray(Config.CMD_LINE),resource.getArray(Config.ENV_MAP));
 			protocol.setTerminalType(site.emulation);
 		}
@@ -552,7 +552,7 @@ public class Session extends JPanel implements Runnable, Application, Adjustment
 		{
 			t.printStackTrace();
 		}
-//		System.out.println("terminating");
+//		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("terminating");
 		setState(STATE_CLOSED);
 	}
 	

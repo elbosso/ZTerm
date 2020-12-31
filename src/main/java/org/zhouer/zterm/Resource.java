@@ -131,7 +131,7 @@ public class Resource implements Config
 		String home = System.getProperty("user.home");
 		String rcfile = ".ztermrc";
 		f = new File( home + File.separator + rcfile );
-		// System.out.println( f );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( f );
 		return f;
 	}
 	
@@ -174,7 +174,7 @@ public class Resource implements Config
 			while( iter.hasNext() ) {
 				str = iter.next().toString();
 				pw.println( str + "::" + map.get( str ) );
-				// System.out.println( "Setting: " + str + " -> " + settings.get( str ) );
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "Setting: " + str + " -> " + settings.get( str ) );
 			}
 			
 			pw.close();
@@ -330,7 +330,7 @@ public class Resource implements Config
 		} else {
 			try {
 				rc.createNewFile();
-				// System.out.println("rcfile: " + rc.getName() + " created.");
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("rcfile: " + rc.getName() + " created.");
 			} catch (IOException e) {
 				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("catch IOException when create new rcfile.");
 			}

@@ -5,6 +5,7 @@
 
 package de.elbosso.examples;
 
+import org.apache.log4j.Level;
 import org.zhouer.protocol.Protocol;
 import org.zhouer.vt.Config;
 
@@ -24,6 +25,7 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 ,java.beans.PropertyChangeListener
 ,java.awt.event.ActionListener
 {
+	private final static org.apache.log4j.Logger CLASS_LOGGER = org.apache.log4j.Logger.getLogger(VT100Tester.class);
 //	private final static java.util.ResourceBundle i18n=java.util.ResourceBundle.getBundle("de.netsysit.dataflowframework.i18n",java.util.Locale.getDefault());
 	private javax.swing.JFrame frame;
 	private org.zhouer.zterm.Session vt100;
@@ -142,7 +144,7 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 		resource.setValue(Config.LF_IS_CR, Boolean.TRUE);
 		Font f=new Font("Monospaced", Font.PLAIN,16);
 		resource.setValue(resource.FONT_FAMILY, f.getFamily());
-		System.out.println("/ "+Toolkit.getDefaultToolkit().getFontMetrics(f).getAscent()+" "+Toolkit.getDefaultToolkit().getFontMetrics(f).getDescent());
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("/ "+Toolkit.getDefaultToolkit().getFontMetrics(f).getAscent()+" "+Toolkit.getDefaultToolkit().getFontMetrics(f).getDescent());
 		resource.setValue(resource.TERMINAL_ROWS, 600/(Toolkit.getDefaultToolkit().getFontMetrics(f).getAscent()+Toolkit.getDefaultToolkit().getFontMetrics(f).getDescent()));
 //		Toolkit.getDefaultToolkit().getFontMetrics(f).charWidth('M');
 //		Graphics2D gfx =
@@ -152,10 +154,10 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 
 		vt100 =new org.zhouer.zterm.Session(null, resource, new org.zhouer.utils.Convertor(), null, this);
 		vt100.addCommandListener(this);
-		System.out.println(vt100.getPreferredSize());
-		System.out.println(vt100.getSize());
-		System.out.println(resource.getIntValue(resource.TERMINAL_COLUMNS));
-		System.out.println(f.getSize()+" "+Toolkit.getDefaultToolkit().getFontMetrics(f).getAscent()+" "+Toolkit.getDefaultToolkit().getFontMetrics(f).getDescent());
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace(vt100.getPreferredSize());
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace(vt100.getSize());
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace(resource.getIntValue(resource.TERMINAL_COLUMNS));
+		if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace(f.getSize()+" "+Toolkit.getDefaultToolkit().getFontMetrics(f).getAscent()+" "+Toolkit.getDefaultToolkit().getFontMetrics(f).getDescent());
 //		vt100.setInteractiveCallback(new DefaultAuthenticator());
 		frame.setContentPane(this);
 		add(vt100);
@@ -179,7 +181,7 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 
 	public static void main(String[] args) throws IOException
 	{
-//		de.elbosso.util.Utilities.configureBasicStdoutLogging(Level.ALL);
+		de.elbosso.util.Utilities.configureBasicStdoutLogging(Level.ALL);
 		try
 		{
 			java.util.Properties iconFallbacks = new java.util.Properties();
@@ -246,7 +248,7 @@ public class VT100Tester extends javax.swing.JPanel implements org.zhouer.vt.App
 */
 				org.zhouer.zterm.Site site=new org.zhouer.zterm.Site("huhu", "pirxhome.fritz.box", 22, Protocol.PTYINOUT);
 				site.encoding=java.nio.charset.StandardCharsets.UTF_8.name();
-				site.emulation="xterm-color";//use vt100 or xterm-color here, the other options are broken (ansi, xterm)
+				site.emulation="xterm";//use vt100 or xterm-color here, the other options are broken (ansi, xterm)
 				resource.setArray(Config.CMD_LINE,new Vector(Arrays.asList(new String[]{"/usr/bin/top"})));
 //				resource.setArray(Config.CMD_LINE,new Vector(Arrays.asList(new String[]{"/usr/bin/screen","-DRR"})));
 				resource.setArray(Config.CMD_LINE,new Vector(Arrays.asList(new String[]{"/usr/bin/vttest"})));

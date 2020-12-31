@@ -118,8 +118,8 @@ class Auth implements InteractiveCallback {
 		
 		String[] ret = new String[numPrompts];
 		
-		// System.out.println("name: " + name );
-		// System.out.println("instruction: " + instruction );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("name: " + name );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("instruction: " + instruction );
 		
 		for( int i = 0; i < numPrompts; i++) {
 			if( echo[i] ) {
@@ -154,7 +154,7 @@ public class SSH2 implements Protocol
 	public boolean connect()
 	{
 		try {
-			// System.out.println("SSH2 to host: " + host + ", port: " + port + " ..." );
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("SSH2 to host: " + host + ", port: " + port + " ..." );
 			conn = new com.trilead.ssh2.Connection( host, port );
 			// FIXME: magic number, 應可自行設定 timeout
 			conn.connect( null, 5000, 60000 );
@@ -180,7 +180,7 @@ public class SSH2 implements Protocol
 				 if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "SSH2: no authentication is needed" );
 			} else {
 				// for(int i = 0; i < methods.length; i++) {
-				// 	System.out.println( methods[i] );
+				// 	if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( methods[i] );
 				// }
  if( conn.isAuthMethodAvailable( username, "publickey" ) ) {
 					authenticated=conn.authenticateWithPublicKey(username, new java.io.File("/home/elbosso/.ssh/id_rsa"), "");
@@ -194,7 +194,7 @@ public class SSH2 implements Protocol
 				disconnect();
 				return false;
 			} else {
-				// System.out.println("authentication success.");
+				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("authentication success.");
 			}
 			
 			sess = conn.openSession();
@@ -257,7 +257,7 @@ public class SSH2 implements Protocol
 
 		r = is.read();
 		if( r == -1 ) {
-			// System.out.println("read -1 (EOF), disconnect().");
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("read -1 (EOF), disconnect().");
 			throw new IOException();
 		}
 		return r;
@@ -270,7 +270,7 @@ public class SSH2 implements Protocol
 		r =  is.read( b );
 		
 		if( r == -1 ) {
-			// System.out.println("read -1 (EOF), disconnect().");
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("read -1 (EOF), disconnect().");
 			throw new IOException();
 		}
 		
@@ -284,7 +284,7 @@ public class SSH2 implements Protocol
 		r = is.read( b, offset, length );
 		
 		if( r == -1 ) {
-			// System.out.println("read -1 (EOF), disconnect().");
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("read -1 (EOF), disconnect().");
 			throw new IOException();
 		}
 		

@@ -87,7 +87,7 @@ public class PtyInOut implements Protocol
 		else
 			r = is.read();
 		if( r == -1 ) {
-			// System.out.println("read -1 (EOF), disconnect().");
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("read -1 (EOF), disconnect().");
 			throw new IOException();
 		}
 		return r;
@@ -103,7 +103,7 @@ public class PtyInOut implements Protocol
 			r =  is.read( b );
 		
 		if( r == -1 ) {
-			// System.out.println("read -1 (EOF), disconnect().");
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("read -1 (EOF), disconnect().");
 			throw new IOException();
 		}
 		
@@ -120,7 +120,7 @@ public class PtyInOut implements Protocol
 			r = is.read( b, offset, length );
 		
 		if( r == -1 ) {
-			// System.out.println("read -1 (EOF), disconnect().");
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("read -1 (EOF), disconnect().");
 			throw new IOException();
 		}
 		

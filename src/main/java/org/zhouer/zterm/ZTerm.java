@@ -590,9 +590,9 @@ public class ZTerm extends JFrame implements ActionListener, ChangeListener, Key
 	{
 		if( 0 <= index && index < tabbedPane.getTabCount() ) {
 			tabbedPane.setSelectedIndex( index );
-			// System.out.println("Change to session: " + index );
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Change to session: " + index );
 		} else {
-			// System.out.println("Change to session: " + index + ", error range!");
+			// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace("Change to session: " + index + ", error range!");
 		}
 	}
 	
@@ -771,7 +771,7 @@ public class ZTerm extends JFrame implements ActionListener, ChangeListener, Key
 			return;
 		}
 		cmd = cmd.substring( 0, pos ) + url + cmd.substring( pos + 2 );
-		// System.out.println( "browser command: " + cmd );
+		// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( "browser command: " + cmd );
 		
 		runExternal( cmd );
 	}

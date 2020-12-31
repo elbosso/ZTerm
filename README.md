@@ -6,6 +6,7 @@ A terminal emulator
 --->
 [![GitHub release](https://img.shields.io/github/release/elbosso/ZTerm/all.svg?maxAge=1)](https://GitHub.com/elbosso/ZTerm/releases/)
 [![GitHub tag](https://img.shields.io/github/tag/elbosso/ZTerm.svg)](https://GitHub.com/elbosso/ZTerm/tags/)
+[![made-with-jasva](https://img.shields.io/badge/Made%20with-Java-9cf)](https://www.java.com)
 [![GitHub license](https://img.shields.io/github/license/elbosso/ZTerm.svg)](https://github.com/elbosso/ZTerm/blob/master/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/elbosso/ZTerm.svg)](https://GitHub.com/elbosso/ZTerm/issues/)
 [![GitHub issues-closed](https://img.shields.io/github/issues-closed/elbosso/ZTerm.svg)](https://GitHub.com/elbosso/ZTerm/issues?q=is%3Aissue+is%3Aclosed)

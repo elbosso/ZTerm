@@ -379,6 +379,7 @@ public class VT100 extends JComponent
 	private int physicalRow( int row )
 	{
 		// row 可能是負值，因此多加上一個 totalrow
+		//CLASS_LOGGER.trace(toprow+" "+row+" "+totalrow);
 		return (toprow + row + totalrow - 1) % totalrow; 
 	}
 	
@@ -1353,7 +1354,11 @@ public class VT100 extends JComponent
 	private void setmargin( int top, int buttom )
 	{
 		topmargin = top;
+		if(topmargin<1)
+			topmargin = 1;
 		buttommargin = buttom;
+		if(buttommargin<=topmargin)
+			buttommargin = maxrow;
 	}
 	
 	/**
@@ -1777,28 +1782,28 @@ public class VT100 extends JComponent
 				
 				crow = Math.min( Math.max( argv[0], topmargin ), buttommargin );
 				ccol = Math.min( Math.max( argv[1], leftmargin ), rightmargin );
-				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " " + argv[1] + " H" );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " " + argv[1] + " H " +topmargin+" "+buttommargin+" "+crow);
 				break;
 			case 'J':
 				if( argv[0] == -1 ) {
 					argv[0] = 0;
 				}
 				erasescreen( argv[0] );
-				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " J" );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " J" );
 				break;
 			case 'K':
 				if( argv[0] == -1 ) {
 					argv[0] = 0;
 				}
 				eraseline( crow, argv[0] );
-				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " K" );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " K" );
 				break;
 			case 'L':
 				if( argv[0] == -1 ) {
 					argv[0] = 1;
 				}
 				insertline( crow, argv[0] );
-				// if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " L" );
+				if(CLASS_LOGGER.isTraceEnabled())CLASS_LOGGER.trace( argv[0] + " L" );
 				break;
 			case 'M':
 				if( argv[0] == -1 ) {
@@ -2160,6 +2165,7 @@ public class VT100 extends JComponent
 
 		// 紀錄暫存的資料，寬字元每個字最多用兩個 bytes，一般字元每字一個 byte
 		for(int i = 0; i < (isWide ? Math.min(textBufPos, 2) : 1); i++) {
+			CLASS_LOGGER.trace(toprow+" "+crow+" "+totalrow);
 			CLASS_LOGGER.trace("setting fg color to "+fgBuf[i]+" for "+c+" in "+prow);
 			fgcolors[prow][ccol + i - 1] = fgBuf[i];
 			bgcolors[prow][ccol + i - 1] = bgBuf[i];

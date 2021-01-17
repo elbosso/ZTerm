@@ -48,6 +48,7 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
         <project.main.class>de.elbosso.examples.VT100Tester</project.main.class>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <elbosso.dependencies.version>1.3.0</elbosso.dependencies.version>
     </properties>
   <build>
         <pluginManagement>
@@ -132,13 +133,24 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
     <repositories>
         <repository>
             <releases>
+                <enabled>false</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </releases>
+            <id>EL BOSSO Snapshots</id>
+            <name>Juergen Key</name>
+            <url>https://elbosso.github.io/maven2</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <releases>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
                 <checksumPolicy>fail</checksumPolicy>
             </releases>
-            <id>EL BOSSO</id>
+            <id>EL BOSSO Releases</id>
             <name>Juergen Key</name>
-            <url>https://elbosso.github.io/maven2</url>
+            <url>https://elbosso.github.io/maven2-releases</url>
             <layout>default</layout>
         </repository>
         <repository>
@@ -169,7 +181,7 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
         <dependency>
             <groupId>de.elbosso</groupId>
             <artifactId>data</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>${elbosso.dependencies.version}</version>
         </dependency>
         <!--dependency>
             <groupId>de.elbosso</groupId>
@@ -180,7 +192,7 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
         <dependency>
             <groupId>de.elbosso</groupId>
             <artifactId>custommaterialgfx</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>${elbosso.dependencies.version}</version>
         </dependency>
         <!--dependency>
             <groupId>de.elbosso</groupId>
@@ -191,13 +203,13 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
         <dependency>
             <groupId>de.elbosso</groupId>
             <artifactId>materialgfx</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>${elbosso.dependencies.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>de.elbosso</groupId>
             <artifactId>model</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>${elbosso.dependencies.version}</version>
             <scope>compile</scope>
         </dependency>
         <!--dependency>
@@ -209,7 +221,7 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
         <dependency>
             <groupId>de.elbosso</groupId>
             <artifactId>ui</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>${elbosso.dependencies.version}</version>
             <scope>compile</scope>
         </dependency>
         <!--dependency>
@@ -221,7 +233,7 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
         <dependency>
             <groupId>de.elbosso</groupId>
             <artifactId>util</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>${elbosso.dependencies.version}</version>
             <scope>compile</scope>
         </dependency>
         <!--dependency>

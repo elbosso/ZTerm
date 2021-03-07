@@ -7,7 +7,7 @@ Changelog of this project.
 
                 * fixes #2
 
-            [1ca8b3dd44ce1ae](https://github.com/<user>/<project>>/commit/1ca8b3dd44ce1ae) Jürgen Key *2020-12-30 16:32:10*
+            [1ca8b3dd44ce1ae](https://github.com/<user>/<project>>/commit/1ca8b3dd44ce1ae) Jürgen Key *2021-12-30 16:32:10*
 
 
 
@@ -15,75 +15,80 @@ Changelog of this project.
 
                 * fixes #2
 
-            [1ca8b3dd44ce1ae](https://github.com/<user>/<project>>/commit/1ca8b3dd44ce1ae) Jürgen Key *2020-12-30 16:32:10*
+            [1ca8b3dd44ce1ae](https://github.com/<user>/<project>>/commit/1ca8b3dd44ce1ae) Jürgen Key *2021-12-30 16:32:10*
 
 
 
             **fixes #3**
 
 
-            [1f0273dcaa98350](https://github.com/<user>/<project>>/commit/1f0273dcaa98350) Jürgen Key *2020-12-30 17:20:42*
+            [1f0273dcaa98350](https://github.com/<user>/<project>>/commit/1f0273dcaa98350) Jürgen Key *2021-12-30 17:20:42*
 
 
 
             **re #5**
 
 
-            [ea7b2d5c6c6474a](https://github.com/<user>/<project>>/commit/ea7b2d5c6c6474a) Jürgen Key *2020-12-31 12:49:19*
+            [ea7b2d5c6c6474a](https://github.com/<user>/<project>>/commit/ea7b2d5c6c6474a) Jürgen Key *2021-12-31 12:49:19*
 
 
 
             **fixes #6**
 
 
-            [2d314b66ec6c482](https://github.com/<user>/<project>>/commit/2d314b66ec6c482) Jürgen Key *2020-12-31 17:31:12*
+            [2d314b66ec6c482](https://github.com/<user>/<project>>/commit/2d314b66ec6c482) Jürgen Key *2021-12-31 17:31:12*
 
             **re #6**
 
 
-            [ed15f256a997ab3](https://github.com/<user>/<project>>/commit/ed15f256a997ab3) Jürgen Key *2020-12-31 16:58:09*
+            [ed15f256a997ab3](https://github.com/<user>/<project>>/commit/ed15f256a997ab3) Jürgen Key *2021-12-31 16:58:09*
 
 
+
+            **fixed dependency issue**
+
+
+            [14997f18f9f3a4a](https://github.com/<user>/<project>>/commit/14997f18f9f3a4a) Juergen Key *2021-01-17 18:15:56*
 
             **some minor fixes**
 
 
-            [c6160c5e9e47bc6](https://github.com/<user>/<project>>/commit/c6160c5e9e47bc6) Jürgen Key *2020-12-31 19:37:22*
+            [c6160c5e9e47bc6](https://github.com/<user>/<project>>/commit/c6160c5e9e47bc6) Jürgen Key *2021-12-31 19:37:22*
 
             **Update README.md**
 
 
-            [88900269126a8c9](https://github.com/<user>/<project>>/commit/88900269126a8c9) Jürgen Key *2020-12-31 18:20:32*
+            [88900269126a8c9](https://github.com/<user>/<project>>/commit/88900269126a8c9) Jürgen Key *2021-12-31 18:20:32*
 
             **Update README.md**
 
 
-            [979f58da87354f3](https://github.com/<user>/<project>>/commit/979f58da87354f3) Jürgen Key *2020-12-31 12:52:51*
+            [979f58da87354f3](https://github.com/<user>/<project>>/commit/979f58da87354f3) Jürgen Key *2021-12-31 12:52:51*
 
             **got auxiliary character set now working - thanks to https://github.com/jawi/jVT220**
 
 
-            [e8e34ed47000416](https://github.com/<user>/<project>>/commit/e8e34ed47000416) Jürgen Key *2020-12-31 11:17:19*
+            [e8e34ed47000416](https://github.com/<user>/<project>>/commit/e8e34ed47000416) Jürgen Key *2021-12-31 11:17:19*
 
             **documentation efforts**
 
 
-            [b64738009180b65](https://github.com/<user>/<project>>/commit/b64738009180b65) Jürgen Key *2020-12-31 09:03:19*
+            [b64738009180b65](https://github.com/<user>/<project>>/commit/b64738009180b65) Jürgen Key *2021-12-31 09:03:19*
 
             **Update README.md**
 
 
-            [87168fa2acd20fd](https://github.com/<user>/<project>>/commit/87168fa2acd20fd) Jürgen Key *2020-12-31 08:57:36*
+            [87168fa2acd20fd](https://github.com/<user>/<project>>/commit/87168fa2acd20fd) Jürgen Key *2021-12-31 08:57:36*
 
             **Update README.md**
 
 
-            [5115080e1d4d758](https://github.com/<user>/<project>>/commit/5115080e1d4d758) Jürgen Key *2020-12-31 08:53:14*
+            [5115080e1d4d758](https://github.com/<user>/<project>>/commit/5115080e1d4d758) Jürgen Key *2021-12-31 08:53:14*
 
             **Create README.md**
 
 
-            [c2c94489da89397](https://github.com/<user>/<project>>/commit/c2c94489da89397) Jürgen Key *2020-12-31 08:52:01*
+            [c2c94489da89397](https://github.com/<user>/<project>>/commit/c2c94489da89397) Jürgen Key *2021-12-31 08:52:01*
 
             **fixed some minor glitches preventing the examples from running**
 

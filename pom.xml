@@ -133,11 +133,11 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
     <repositories>
         <repository>
             <releases>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
                 <checksumPolicy>fail</checksumPolicy>
             </releases>
-            <id>EL BOSSO Snapshots</id>
+            <id>EL BOSSO - SNAPSHOTS</id>
             <name>Juergen Key</name>
             <url>https://elbosso.github.io/maven2</url>
             <layout>default</layout>
@@ -148,7 +148,7 @@ WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
                 <updatePolicy>always</updatePolicy>
                 <checksumPolicy>fail</checksumPolicy>
             </releases>
-            <id>EL BOSSO Releases</id>
+            <id>EL BOSSO - RELEASES</id>
             <name>Juergen Key</name>
             <url>https://elbosso.github.io/maven2-releases</url>
             <layout>default</layout>
